@@ -55,7 +55,10 @@ int main(int argc, char** argc)
         << superblock.s_inodes_per_group << ','
         << superblock.s_first_ino << endl;
 
-    
+    __u32 blocksPerGroup = (superblock.s_blocks_count >= superblock.s_blocks_per_group) 
+        ? superblock.s_blocks_per_group : (superblock.s_blocks_count % superblock.s_blocks_per_group);
+    __u32 iNodesPerGroup = (superblock.s_inodes_count >= superblock.s_inodes_per_group) 
+        ? superblock.s_inodes_per_group : (superblock.s_inodes_count % superblock.s_inodes_per_group);
 
     return 0;
 }
