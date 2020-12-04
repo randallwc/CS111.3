@@ -55,10 +55,40 @@ int main(int argc, char** argc)
         << superblock.s_inodes_per_group << ','
         << superblock.s_first_ino << endl;
 
-    __u32 blocksPerGroup = (superblock.s_blocks_count >= superblock.s_blocks_per_group) 
-        ? superblock.s_blocks_per_group : (superblock.s_blocks_count % superblock.s_blocks_per_group);
-    __u32 iNodesPerGroup = (superblock.s_inodes_count >= superblock.s_inodes_per_group) 
-        ? superblock.s_inodes_per_group : (superblock.s_inodes_count % superblock.s_inodes_per_group);
+    int i = 0;
+    for (i = 0; i < numGroups; i++)
+    {
+        groupSummary(i, numGroups);
+    }
+    
+    //groupSummary();
+    //freeBlockEntries();
+    //freeiNodeEntries();
+    //iNodeSummary();
+    //directoryEntries();
+    //indirectBlockReferences();
 
     return 0;
+}
+
+void groupSummary(int index, __u32 max)
+{
+    struct ext2_group_desc group;
+    __32 offset = (superblock.s_first_data_block + 1) * blocksize;
+    pread(img, &group, sizeof(group), offset);
+    
+    __u32 numBlocks = (superblock.s_blocks_count >= superblock.s_blocks_per_group) ?
+        superblock.s_blocks_count : (superblock.s_blocks_count % superblock.s_blocks_per_group);
+    __u32 numiNodes = (superblock.s_inodes_count)
+    cout << "GROUP,"
+        << "0," // Only one group for 3a
+        << numBlocks << ','
+        << // inodes in group
+        << superblock.s_free_blocks_count << ','
+        << superblock.s_free_inodes_count << ','
+        << group.bg_block_bitmap << ','
+        << group.bg_inode_bitmap << ','
+        << group.bg_inode_table << endl;
+
+    return;
 }
