@@ -79,11 +79,12 @@ void groupSummary(int index, __u32 max)
     
     __u32 numBlocks = (superblock.s_blocks_count >= superblock.s_blocks_per_group) ?
         superblock.s_blocks_count : (superblock.s_blocks_count % superblock.s_blocks_per_group);
-    __u32 numiNodes = (superblock.s_inodes_count)
+    __u32 numiNodes = (superblock.s_inodes_count >= superblock.s_inodes_per_group) ?
+        superblock.s_inodes_count : (superblock.s_inodes_count % superblock.s_inodes_per_group);
     cout << "GROUP,"
         << "0," // Only one group for 3a
         << numBlocks << ','
-        << // inodes in group
+        << numiNodes << ','
         << superblock.s_free_blocks_count << ','
         << superblock.s_free_inodes_count << ','
         << group.bg_block_bitmap << ','
