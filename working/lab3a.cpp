@@ -81,6 +81,7 @@ void groupSummary(int index, __u32 max)
         superblock.s_blocks_count : (superblock.s_blocks_count % superblock.s_blocks_per_group);
     __u32 numiNodes = (superblock.s_inodes_count >= superblock.s_inodes_per_group) ?
         superblock.s_inodes_count : (superblock.s_inodes_count % superblock.s_inodes_per_group);
+    
     cout << "GROUP,"
         << "0," // Only one group for 3a
         << numBlocks << ','
