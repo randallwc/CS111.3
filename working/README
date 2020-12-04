@@ -1,0 +1,11 @@
+NAME: William Randall,Dylan Gunn
+EMAIL: wrandall1000@gmail.com,dylankgunn@gmail.com
+ID: 805167986,805112866
+
+Files:
+
+Makefile	... makefile with 3 arguments default, dist, and clean
+README		... this file
+lab3a.cpp	... source file in Cpp
+
+Sources:
