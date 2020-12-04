@@ -7,11 +7,18 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "ext2_fs.h"
-using namespace std
+using namespace std;
 
 struct ext2_super_block superblock;
 
-int blocksize;
+__u32 blocksize;
+
+void groupSummary();
+void freeBlockEntries();
+void freeiNodeEntries();
+void iNodeSummary();
+void directoryEntries();
+void indirectBlockReferences();
 
 int main(int argc, char** argc)
 {
@@ -37,7 +44,8 @@ int main(int argc, char** argc)
     }
 
     blocksize = EXT2_MIN_BLOCK_SIZE << superblock.s_log_block_size;
-
+    
+    /* superblock summary */
     cout << "SUPERBLOCK," 
         << superblock.s_blocks_count << ','
         << superblock.s_inodes_count << ','
