@@ -9,7 +9,7 @@ UID=805167986
 FILES=README Makefile lab3a.cpp
 
 default: $(NAME).cpp
-	$(CC) $(CFLAGS) -o $(NAME) $(NAME).c
+	$(CC) $(CFLAGS) -o $(NAME) $(NAME).cpp
 
 clean:
 	rm -f $(NAME)
