@@ -199,17 +199,17 @@ void iNodeSummary(int table, int numiNode)
     int numBlocks = 2 * iNode.i_blocks / (2 << superblock.s_log_block_size);
 
     cout << "INODE,"
-        << numiNode << ','              /* inode number (decimal) */
-        << type << ','                  /* file type ('f' for file, 'd' for directory, 's' for symbolic link, '?" for anything else) */
-        << iNode.i_mode & 0xFFF << ','  /* mode (low order 12-bits, octal ... suggested format "%o") */
-        << iNode.i_uid << ','           /* owner (decimal) */
-        << iNode.i_gid << ','           /* group (decimal) */
-        << iNode.i_links_count << ','   /* link count (decimal) */
-        << ctime << ','                 /* time of last I-node change (mm/dd/yy hh:mm:ss, GMT) */
-        << mtime << ','                 /* modification time (mm/dd/yy hh:mm:ss, GMT) */
-        << atime << ','                 /* time of last access (mm/dd/yy hh:mm:ss, GMT) */
-        << iNode.i_size << ','          /* file size (decimal) */
-        << numBlocks;                   /* number of (512 byte) blocks of disk space (decimal) taken up by this file */
+        << numiNode << ','             /* inode number (decimal) */
+        << type << ','                 /* file type ('f' for file, 'd' for directory, 's' for symbolic link, '?" for anything else) */
+        << iNode.i_mode & 0xFFF << ',' /* mode (low order 12-bits, octal ... suggested format "%o") */
+        << iNode.i_uid << ','          /* owner (decimal) */
+        << iNode.i_gid << ','          /* group (decimal) */
+        << iNode.i_links_count << ','  /* link count (decimal) */
+        << ctime << ','                /* time of last I-node change (mm/dd/yy hh:mm:ss, GMT) */
+        << mtime << ','                /* modification time (mm/dd/yy hh:mm:ss, GMT) */
+        << atime << ','                /* time of last access (mm/dd/yy hh:mm:ss, GMT) */
+        << iNode.i_size << ','         /* file size (decimal) */
+        << numBlocks;                  /* number of (512 byte) blocks of disk space (decimal) taken up by this file */
 
     int i;
     if (type != 's' || iNode.i_size > 60)
@@ -286,21 +286,21 @@ void indirectBlockReferences(int numberOfiNodes, int numberOfBlocks, int off, in
         // when 
         if(i_arr[i]){
             cout << "INDIRECT,"
-                 << numiNode << ','         /* I-node number of the owning file (decimal) */
-                 << depth << ',' /*         (decimal) level of indirection for the block being scanned ... 
-                                                1 for single indirect, 
-                                                2 for double indirect, 
-                                                3 for triple */
-                 << off << ','              /* logical block offset (decimal) represented by the referenced block. 
-                                             If the referenced block is a data block, this is the logical block offset 
-                                             of that block within the file. 
-                                             If the referenced block is a single- or double-indirect block, 
-                                             this is the same as the logical offset of the first data block to which it refers. */
-                 << numberOfBlocks << ','   /* block number of the (1, 2, 3)
-                                              indirect block being scanned (decimal) . . . 
-                                              not the highest level block (in the recursive scan), 
-                                              but the lower level block that contains the block reference reported by this entry. */
-                 << i_arr[i] << endl;       /* block number of the referenced block (decimal) */
+                 << numiNode << ','       /* I-node number of the owning file (decimal) */
+                 << depth << ',' /*       (decimal) level of indirection for the block being scanned ... 
+                                              1 for single indirect, 
+                                              2 for double indirect, 
+                                              3 for triple */
+                 << off << ','            /* logical block offset (decimal) represented by the referenced block. 
+                                           If the referenced block is a data block, this is the logical block offset 
+                                           of that block within the file. 
+                                           If the referenced block is a single- or double-indirect block, 
+                                           this is the same as the logical offset of the first data block to which it refers. */
+                 << numberOfBlocks << ',' /* block number of the (1, 2, 3)
+                                            indirect block being scanned (decimal) . . . 
+                                            not the highest level block (in the recursive scan), 
+                                            but the lower level block that contains the block reference reported by this entry. */
+                 << i_arr[i] << endl;     /* block number of the referenced block (decimal) */
 
             // check if it is a directory with a depth of 1
             if(depth == 1 && type == 'd'){
