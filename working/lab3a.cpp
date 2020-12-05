@@ -15,15 +15,20 @@ struct ext2_super_block superblock;
 //GLOBAL VARS
 int img = -1;
 __u32 blocksize;
-
-void groupSummary(int index, __u32 max); /* read in the group and get a Summary */
-void freeBlockBitmap(int index, int off, __u32 numBlocks); /* free Block Bitmap */
-void freeiNodeBitmap(int index, int off, int table, __u32 numBytes); /* free iNode Bitmap */
-void iNodeSummary(int table, int numiNode); /* summary of iNode */
-void directoryEntries(int numiNode, int off); /* read direct block references */
-void indirectBlockReferences(int numberOfiNodes, int numberOfBlocks, int off, int depth, char type); /* read indirect block references */
-
-void formatTime(__u32 time, char* timeStr); /* make a time string buffer */
+/* read in the group and get a Summary */
+void groupSummary(int index, __u32 max);
+/* free Block Bitmap */
+void freeBlockBitmap(int index, int off, __u32 numBlocks);
+/* free iNode Bitmap */
+void freeiNodeBitmap(int index, int off, int table, __u32 numBytes);
+/* summary of iNode */
+void iNodeSummary(int table, int numiNode);
+/* read direct block references */
+void directoryEntries(int numiNode, int off);
+/* read indirect block references */
+void indirectBlockReferences(int numberOfiNodes, int numberOfBlocks, int off, int depth, char type);
+/* make a time string buffer */
+void formatTime(__u32 time, char* timeStr);
 
 int main(int argc, char** argc)
 {
