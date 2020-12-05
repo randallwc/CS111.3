@@ -192,7 +192,38 @@ void iNodeSummary(int table, int numiNode)
     formatTime(iNode.i_mtime, mtime);
     formatTime(iNode.i_atime, atime);
 
-    int 
+    int numBlocks = 2 * iNode.i_blocks / (2 << superblock.s_log_block_size);
+
+    cout << "INODE,"
+        << numiNode << ','
+        << type << ','
+        << iNode.i_mode & 0xFFF << ',' //Check this
+        << iNode.i_uid << ','
+        << iNode.i_gid << ','
+        << iNode.i_links_count << ','
+        << ctime << ','
+        << mtime << ','
+        << atime << ','
+        << iNode.i_size << ','
+        << numBlocks;
+    int i;
+    if (type != 's' || iNode.i_size > 60)
+        for (i = 0; i < 15, i++)
+            cout << iNode.i_block[i] << ',';
+    cout << endl;
+
+    if (type == 'd')
+        for (i = 0; i < 12; i++)
+            if (iNode.i_block[i] != 0)
+                //func
+    if (iNode.i_block[12] != 0)
+        //func
+    if (iNode.i_block[13] != 0)
+        //func
+    if (iNode.i_block[14] != 0)
+        //func
+
+    return;
 }
 
 void formatTime(__u32 time, char* timeStr)
