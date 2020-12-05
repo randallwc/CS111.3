@@ -66,13 +66,13 @@ int main(int argc, char** argc)
     
     // superblock summary
     cout << "SUPERBLOCK," 
-        << superblock.s_blocks_count << ','     /* total number of blocks (decimal) */
-        << superblock.s_inodes_count << ','     /* total number of i-nodes (decimal) */
-        << blocksize << ','                     /* block size (in bytes, decimal) */
-        << superblock.s_inode_size << ','       /* i-node size (in bytes, decimal) */
-        << superblock.s_blocks_per_group << ',' /* blocks per group (decimal) */
-        << superblock.s_inodes_per_group << ',' /* i-nodes per group (decimal) */
-        << superblock.s_first_ino << endl;      /* first non-reserved i-node (decimal) */
+         << superblock.s_blocks_count << ','     /* total number of blocks (decimal) */
+         << superblock.s_inodes_count << ','     /* total number of i-nodes (decimal) */
+         << blocksize << ','                     /* block size (in bytes, decimal) */
+         << superblock.s_inode_size << ','       /* i-node size (in bytes, decimal) */
+         << superblock.s_blocks_per_group << ',' /* blocks per group (decimal) */
+         << superblock.s_inodes_per_group << ',' /* i-nodes per group (decimal) */
+         << superblock.s_first_ino << endl;      /* first non-reserved i-node (decimal) */
 
     // get number of groups for groupSummary
     __u32 numGroups = superblock.s_blocks_count / superblock.s_blocks_per_group;
@@ -104,6 +104,8 @@ void groupSummary(int index, __u32 max)
         exit(1);
     }
     
+    //TODO
+    /* check dec of numBlocks and numiNodes */
     // get the number of blocks
     if(superblock.s_blocks_count >= superblock.s_blocks_per_group){
         numBlocks = superblock.s_blocks_count;
@@ -121,6 +123,8 @@ void groupSummary(int index, __u32 max)
     }
     
     cout << "GROUP,"
+        //TODO
+        /* check next line */
         << "0,"                                  /* group number (decimal, starting from zero) -- only one group for 3a */
         << numBlocks << ','                      /* total number of blocks in this group (decimal) */
         << numiNodes << ','                      /* total number of i-nodes in this group (decimal) */
@@ -142,7 +146,8 @@ void freeBlockBitmap(int index, int off, __u32 numBlocks)
     off = 1024 + blocksize * (off - 1);
     char* blockBitmap = malloc(blocksize);
 
-    //check sizing here
+    //TODO
+    /* check sizing here */
     if (pread(img, blockBitmap, blocksize, off) != numBlocks)
     {
         fprintf(stderr, "Error: Encountered an issue on pread() for bitmap\n");
