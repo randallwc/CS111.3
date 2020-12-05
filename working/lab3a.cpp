@@ -151,8 +151,7 @@ void freeBlockBitmap(int index, int off, __u32 numBlocks)
     
     int blockNum = superblock.s_first_data_block + index * superblock.s_blocks_per_group;
     int mask = 1;
-    int bit;
-    int i, j;
+    int i, j, bit;
     for (i = 0; i < numBlocks; i++)
     {
         bit = blockBitmap[i];
@@ -160,7 +159,9 @@ void freeBlockBitmap(int index, int off, __u32 numBlocks)
         {
             if (!(bit & mask))
                 cout << "BFREE," << blockNum << endl; // number of the free block (decimal)
-            bit >>= 1;
+            
+            // shift bit and increment blockNum
+            bit = bit >> 1;
             blockNum++;
         }
     }
