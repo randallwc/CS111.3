@@ -220,17 +220,17 @@ void iNodeSummary(int table, int numiNode)
     int numberOfBlocks = 12;
     int depth = 1;
     if (iNode.i_block[12] != 0)
-        indirectBlockReferences(numiNode, iNode.i_block[], numberOfBlocks, depth, type);
+        indirectBlockReferences(numiNode, iNode.i_block[12], numberOfBlocks, depth, type);
 
     numberOfBlocks += 256;
     depth++;
     if (iNode.i_block[13] != 0)
-        indirectBlockReferences(numiNode, iNode.i_block[], numberOfBlocks, depth, type);
+        indirectBlockReferences(numiNode, iNode.i_block[13], numberOfBlocks, depth, type);
 
     numberOfBlocks += 65536;
     depth++;
     if (iNode.i_block[14] != 0)
-        indirectBlockReferences(numiNode, iNode.i_block[], numberOfBlocks, depth, type);
+        indirectBlockReferences(numiNode, iNode.i_block[14], numberOfBlocks, depth, type);
 
     return;
 }
