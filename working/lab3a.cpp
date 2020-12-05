@@ -177,9 +177,8 @@ void freeiNodeBitmap(int index, int off, int table, __u32 numBytes)
     pread(img, iNodeBitmap, blocksize, off);
 
     int iNodeNum = superblock.s_inodes_per_group * index + 1;
-    int bit;
     int mask = 1;
-    int i, j;
+    int i, j, bit;
     for (i = 0; i < numBytes; i++)
     {
         bit = iNodeBitmap[i];
@@ -189,6 +188,10 @@ void freeiNodeBitmap(int index, int off, int table, __u32 numBytes)
                 cout << "IFREE," << iNodeNum << endl; // number of the free I-node (decimal)
             else
                iNodeSummary(table, iNodeNum);
+
+            // shift bit and increment iNodeNum
+            bit = bit >> 1;
+            iNodeNum++;
         }
     }
 }
