@@ -216,7 +216,7 @@ void iNodeSummary(int table, int numiNode)
         for (i = 0; i < 12; i++)
             if (iNode.i_block[i] != 0)
                 directoryEntries(numiNode, iNode.i_block[i]);
-    //void indirectBlockReferences(int numiNode, int numberOfBlocks, int off, int depth, char type);
+
     int numberOfBlocks = 12;
     int depth = 1;
     if (iNode.i_block[12] != 0)
