@@ -9,8 +9,6 @@
 #include "ext2_fs.h"
 using namespace std;
 
-//test commit
-
 //GLOBAL STRUCTS
 struct ext2_super_block superblock;
 
