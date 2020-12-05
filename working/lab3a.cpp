@@ -62,7 +62,6 @@ int main(int argc, char** argc)
         groupSummary(i, numGroups);
     }
     
-    //iNodeSummary();
     //directoryEntries();
     //indirectBlockReferences();
 
@@ -73,7 +72,11 @@ void groupSummary(int index, __u32 max)
 {
     struct ext2_group_desc group;
     __u32 offset = (superblock.s_first_data_block + 1) * blocksize;
-    pread(img, &group, sizeof(group), offset);
+    if (pread(img, &group, sizeof(struct ext2_group_desc), offset) != sizeof(struct ext2_group_desc))
+    {
+        fprintf(stderr, "Error: Encountered an issue on pread() for group\n");
+        exit(1);
+    }
     
     __u32 numBlocks = (superblock.s_blocks_count >= superblock.s_blocks_per_group) ?
         superblock.s_blocks_count : (superblock.s_blocks_count % superblock.s_blocks_per_group);
@@ -102,7 +105,7 @@ void freeBlockBitmap(int index, int off, __u32 numBlocks)
     off = 1024 + blocksize * (off - 1);
     char* blockBitmap = malloc(blocksize);
 
-    if (pread(img, blockBitmap, blocksize, off) != numBlocks)
+    if (pread(img, blockBitmap, blocksize, off) != numBlocks) //check sizing here
     {
         fprintf(stderr, "Error: Encountered an issue on pread() for bitmap\n");
         exit(1);
@@ -117,7 +120,7 @@ void freeBlockBitmap(int index, int off, __u32 numBlocks)
         bit = blockBitmap[i];
         for (j = 0; j < 8; j++)
         {
-            if (!(bit & 1))
+            if (!(bit & mask))
                 cout << "BFREE," << blockNum << endl;
             bit >>= 1;
             blockNum++;
@@ -137,16 +140,68 @@ void freeiNodeBitmap(int index, int off, int table, __u32 numBytes)
 
     int iNodeNum = superblock.s_inodes_per_group * index + 1;
     int bit;
+    int mask = 1;
     int i, j;
     for (i = 0; i < numBytes; i++)
     {
         bit = iNodeBitmap[i];
         for (j = 0; j < 8; j++)
         {
-            if (!(bit & 1))
+            if (!(bit & mask))
                 cout << "IFREE," << iNodeNum << endl;
             else
-
+               iNodeSummary(table, iNodeNum); 
         }
+    }
+}
+
+void iNodeSummary(int table, int numiNode)
+{
+    long off = 1024 + blocksize * (table - 1) + 128*(numiNode - 1);
+
+    struct ext2_inode iNode;
+    if (pread(img, &iNode, sizeof(struct ext2_inode), off) != sizeof(struct ext2_inode))
+    {
+        fprintf(stderr, "Error: Encountered an issue on call to pread() for inode\n");
+        exit(1);
+    }
+
+    char type = '?';
+    unsigned int mode = (__uint16_t)(iNode.i_mode >> 12);
+    if (mode == 0xa)
+        type = 's';
+    else if (mode == 0x8)
+        type = 'f';
+    else if (mode == 0x4)
+        type = 'd';
+
+    char ctime[18], mtime[18], atime[20];
+    formatTime(iNode.i_ctime, ctime);
+    formatTime(iNode.i_mtime, mtime);
+    formatTime(iNode.i_atime, atime);
+
+    int 
+}
+
+void formatTime(__u32 time, char* timeStr)
+{
+    time_t tmp = time;
+    tm* tm = gmtime(&tmp);
+    if (tm == NULL)
+    {
+        fprintf(stderr, "Error: Encountered an issue on gmtime\n");
+        exit(1);
+    }
+
+    if ((sprintf(timeStr, "%02d/%02d/%02d %02d:%02d:%02d", 
+                    tm->tm_mon + 1,
+                    tm->tm_mday,
+                    tm->tm_year % 100,
+                    tm->tm_hour,
+                    tm->tm_min,
+                    tm->tm_sec)) < 0)
+    {
+        fprintf(stderr, "Error: Unable to move time string into buffer with sprintf\n");
+        exit(1);
     }
 }
