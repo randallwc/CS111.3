@@ -21,7 +21,7 @@ void freeBlockBitmap(int index, int off, __u32 numBlocks); /* free Block Bitmap 
 void freeiNodeBitmap(int index, int off, int table, __u32 numBytes); /* free iNode Bitmap */
 void iNodeSummary(int table, int numiNode); /* summary of iNode */
 void directoryEntries(int numiNode, int off); /* read direct block references */
-void indirectBlockReferences(int numiNode, int numberOfBlocks, int off, int depth, char type); /* read indirect block references */
+void indirectBlockReferences(int numberOfiNodes, int numberOfBlocks, int off, int depth, char type); /* read indirect block references */
 
 void formatTime(__u32 time, char* timeStr); /* make a time string buffer */
 
@@ -73,9 +73,6 @@ int main(int argc, char** argc)
     {
         groupSummary(i, numGroups);
     }
-    
-    //directoryEntries();
-    //indirectBlockReferences();
 
     return 0;
 }
@@ -241,8 +238,61 @@ void directoryEntries(int numiNode, int off)
 }
 
 
-void indirectBlockReferences(int numiNode, int numberOfBlocks, int off, int depth, char type)
+void indirectBlockReferences(int numberOfiNodes, int numberOfBlocks, int off, int depth, char type)
 {
+    // get indent length
+    __u32 length = blocksize / sizeof(__u32);
+
+    // create space for the indent array
+    __u32 * i_arr = malloc(blocksize);
+
+    // read into the array
+    pread(img, i_arr, blocksize, numberOfBlocks * blocksize);
+
+    int i;
+    for(i = 0; i < length; i++){
+        // when 
+        if(i_arr[i]){
+            cout << "INDIRECT,"
+                 << numiNode << ','
+                 << depth << ','
+                 << off << ','
+                 << numberOfBlocks << ','
+                 << i_arr[i] << endl;
+
+            // check if it is a directory with a depth of 1
+            if(depth == 1 && type == 'd'){
+                directoryEntries(numberOfBlocks, i_arr[i]);
+            }
+
+            // if the depth is greater than 1 then do an indirect block reference
+            if(depth > 1){
+                indirectBlockReferences(numberOfiNodes, i_arr[i], off, --depth, type);
+            }
+        }
+
+        // if depth is 1 then increment offset
+        if(depth == 1){
+            off++;
+        }
+
+        // if depth is 2 then add 256 to offset
+        else if(depth == 2){
+            off += 256;
+        }
+
+        // if depth is 3 then add 65536 to offset
+        else if(depth == 3){
+            off += 65536;
+        }
+        else{
+            fprintf(stderr, "invalid depth\n");
+            exit(1);
+        }
+    }
+
+    free(i_arr);
+
     return;
 }
 
