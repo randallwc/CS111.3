@@ -9,6 +9,8 @@
 #include "ext2_fs.h"
 using namespace std;
 
+//test commit
+
 //GLOBAL STRUCTS
 struct ext2_super_block superblock;
 
@@ -94,9 +96,8 @@ void groupSummary(int index, __u32 max)
     __u32 numiNodes = (superblock.s_inodes_count >= superblock.s_inodes_per_group) ?
         superblock.s_inodes_count : (superblock.s_inodes_count % superblock.s_inodes_per_group);
     
-    int i = 1;// Only one group for 3a
     cout << "GROUP,"
-        << i << ','
+        << "0," // Only one group for 3a
         << numBlocks << ','
         << numiNodes << ','
         << superblock.s_free_blocks_count << ','
