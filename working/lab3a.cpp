@@ -99,6 +99,7 @@ void groupSummary(int index, __u32 max)
         superblock.s_inodes_count : (superblock.s_inodes_count % superblock.s_inodes_per_group);
     
     cout << "GROUP,"
+<<<<<<< HEAD
         << "0," /* group number (decimal, starting from zero) -- only one group for 3a */
         << numBlocks << ',' /* total number of blocks in this group (decimal) */
         << numiNodes << ',' /* total number of i-nodes in this group (decimal) */
@@ -107,6 +108,16 @@ void groupSummary(int index, __u32 max)
         << group.bg_block_bitmap << ',' /* block number of free block bitmap for this group (decimal) */
         << group.bg_inode_bitmap << ',' /* block number of free i-node bitmap for this group (decimal) */
         << group.bg_inode_table << endl;  /* block number of first block of i-nodes in this group (decimal) */
+=======
+        << "0,"                                  /* group number (decimal, starting from zero) -- only one group for 3a */
+        << numBlocks << ','                      /* total number of blocks in this group (decimal) */
+        << numiNodes << ','                      /* total number of i-nodes in this group (decimal) */
+        << superblock.s_free_blocks_count << ',' /* number of free blocks (decimal) */
+        << superblock.s_free_inodes_count << ',' /* number of free i-nodes (decimal) */
+        << group.bg_block_bitmap << ','          /* block number of free block bitmap for this group (decimal) */
+        << group.bg_inode_bitmap << ','          /* block number of free i-node bitmap for this group (decimal) */
+        << group.bg_inode_table << endl;         /* block number of first block of i-nodes in this group (decimal) */
+>>>>>>> update comments
 
     freeBlockBitmap(index, group.bg_block_bitmap, numBlocks);
 
@@ -120,7 +131,8 @@ void freeBlockBitmap(int index, int off, __u32 numBlocks)
     off = 1024 + blocksize * (off - 1);
     char* blockBitmap = malloc(blocksize);
 
-    if (pread(img, blockBitmap, blocksize, off) != numBlocks) //check sizing here
+    //check sizing here
+    if (pread(img, blockBitmap, blocksize, off) != numBlocks)
     {
         fprintf(stderr, "Error: Encountered an issue on pread() for bitmap\n");
         exit(1);
@@ -198,6 +210,7 @@ void iNodeSummary(int table, int numiNode)
     int numBlocks = 2 * iNode.i_blocks / (2 << superblock.s_log_block_size);
 
     cout << "INODE,"
+<<<<<<< HEAD
         << numiNode << ',' /* inode number (decimal) */
         << type << ',' /* file type ('f' for file, 'd' for directory, 's' for symbolic link, '?" for anything else) */
         << iNode.i_mode & 0xFFF << ',' /* mode (low order 12-bits, octal ... suggested format "%o") */
@@ -209,6 +222,19 @@ void iNodeSummary(int table, int numiNode)
         << atime << ',' /* time of last access (mm/dd/yy hh:mm:ss, GMT) */
         << iNode.i_size << ',' /* file size (decimal) */
         << numBlocks; /* number of (512 byte) blocks of disk space (decimal) taken up by this file */
+=======
+        << numiNode << ','              /* inode number (decimal) */
+        << type << ','                  /* file type ('f' for file, 'd' for directory, 's' for symbolic link, '?" for anything else) */
+        << iNode.i_mode & 0xFFF << ','  /* mode (low order 12-bits, octal ... suggested format "%o") */
+        << iNode.i_uid << ','           /* owner (decimal) */
+        << iNode.i_gid << ','           /* group (decimal) */
+        << iNode.i_links_count << ','   /* link count (decimal) */
+        << ctime << ','                 /* time of last I-node change (mm/dd/yy hh:mm:ss, GMT) */
+        << mtime << ','                 /* modification time (mm/dd/yy hh:mm:ss, GMT) */
+        << atime << ','                 /* time of last access (mm/dd/yy hh:mm:ss, GMT) */
+        << iNode.i_size << ','          /* file size (decimal) */
+        << numBlocks;                   /* number of (512 byte) blocks of disk space (decimal) taken up by this file */
+>>>>>>> update comments
 
     int i;
     if (type != 's' || iNode.i_size > 60)
@@ -258,12 +284,21 @@ void directoryEntries(int numiNode, int off)
         {
             memset(&entry.name[entry.name_len], 0, 256 - entry.name_len);
             cout << "DIRENT,"
+<<<<<<< HEAD
                 << numiNode << ',' /* parent inode number (decimal) ... the I-node number of the directory that contains this entry */
                 << boff << ',' /* logical byte offset (decimal) of this entry within the directory */
                 << dirEntry.inode << ',' /* inode number of the referenced file (decimal) */
                 << dirEntry.rec_len << ',' /* entry length (decimal) */
                 << dirEntry.name_len << ',' /* name length (decimal) */
                 << dirEntry.name << endl; /* name (string, surrounded by single-quotes). Don't worry about escaping, we promise there will be no single-quotes or commas in any of the file names. */
+=======
+                << numiNode << ','          /* parent inode number (decimal) ... the I-node number of the directory that contains this entry */
+                << boff << ','              /* logical byte offset (decimal) of this entry within the directory */
+                << dirEntry.inode << ','    /* inode number of the referenced file (decimal) */
+                << dirEntry.rec_len << ','  /* entry length (decimal) */
+                << dirEntry.name_len << ',' /* name length (decimal) */
+                << dirEntry.name << endl;   /* name (string, surrounded by single-quotes). Don't worry about escaping, we promise there will be no single-quotes or commas in any of the file names. */
+>>>>>>> update comments
         }
         boff += dirEntry.rec_len;
     }
@@ -285,6 +320,7 @@ void indirectBlockReferences(int numberOfiNodes, int numberOfBlocks, int off, in
         // when 
         if(i_arr[i]){
             cout << "INDIRECT,"
+<<<<<<< HEAD
                  << numiNode << ',' /* I-node number of the owning file (decimal) */
                  << depth << ',' /* (decimal) level of indirection for the block being scanned ... 
                                         1 for single indirect, 
@@ -300,6 +336,23 @@ void indirectBlockReferences(int numberOfiNodes, int numberOfBlocks, int off, in
                                             not the highest level block (in the recursive scan), 
                                             but the lower level block that contains the block reference reported by this entry. */
                  << i_arr[i] << endl; /* block number of the referenced block (decimal) */
+=======
+                 << numiNode << ','         /* I-node number of the owning file (decimal) */
+                 << depth << ',' /*         (decimal) level of indirection for the block being scanned ... 
+                                                1 for single indirect, 
+                                                2 for double indirect, 
+                                                3 for triple */
+                 << off << ','              /* logical block offset (decimal) represented by the referenced block. 
+                                             If the referenced block is a data block, this is the logical block offset 
+                                             of that block within the file. 
+                                             If the referenced block is a single- or double-indirect block, 
+                                             this is the same as the logical offset of the first data block to which it refers. */
+                 << numberOfBlocks << ','   /* block number of the (1, 2, 3)
+                                              indirect block being scanned (decimal) . . . 
+                                              not the highest level block (in the recursive scan), 
+                                              but the lower level block that contains the block reference reported by this entry. */
+                 << i_arr[i] << endl;       /* block number of the referenced block (decimal) */
+>>>>>>> update comments
 
             // check if it is a directory with a depth of 1
             if(depth == 1 && type == 'd'){
