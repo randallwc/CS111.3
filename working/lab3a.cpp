@@ -17,12 +17,13 @@ int img = -1;
 __u32 blocksize;
 
 void groupSummary(int index, __u32 max); /* read in the group and get a Summary */
-void freeBlockBitmap(int index, int off, __u32 numBlocks); /*  */
-void freeiNodeBitmap(int index, int off, int table, __u32 numBytes); /*  */
-void iNodeSummary(int table, int numiNode); /*  */
-void formatTime(__u32 time, char* timeStr); /*  */
-void directoryEntries();
-void indirectBlockReferences();
+void freeBlockBitmap(int index, int off, __u32 numBlocks); /* free Block Bitmap */
+void freeiNodeBitmap(int index, int off, int table, __u32 numBytes); /* free iNode Bitmap */
+void iNodeSummary(int table, int numiNode); /* summary of iNode */
+void directoryEntries(int numiNode, int off); /* read direct block references */
+void indirectBlockReferences(int numiNode, int numberOfBlocks, int off, int depth, char type); /* read indirect block references */
+
+void formatTime(__u32 time, char* timeStr); /* make a time string buffer */
 
 int main(int argc, char** argc)
 {
@@ -214,14 +215,34 @@ void iNodeSummary(int table, int numiNode)
     if (type == 'd')
         for (i = 0; i < 12; i++)
             if (iNode.i_block[i] != 0)
-                //func
+                directoryEntries(numiNode, iNode.i_block[i]);
+    //void indirectBlockReferences(int numiNode, int numberOfBlocks, int off, int depth, char type);
+    int numberOfBlocks = 12;
+    int depth = 1;
     if (iNode.i_block[12] != 0)
-        //func
-    if (iNode.i_block[13] != 0)
-        //func
-    if (iNode.i_block[14] != 0)
-        //func
+        indirectBlockReferences(numiNode, iNode.i_block[], numberOfBlocks, depth, type);
 
+    numberOfBlocks += 256;
+    depth++;
+    if (iNode.i_block[13] != 0)
+        indirectBlockReferences(numiNode, iNode.i_block[], numberOfBlocks, depth, type);
+
+    numberOfBlocks += 65536;
+    depth++;
+    if (iNode.i_block[14] != 0)
+        indirectBlockReferences(numiNode, iNode.i_block[], numberOfBlocks, depth, type);
+
+    return;
+}
+
+void directoryEntries(int numiNode, int off)
+{
+    return;
+}
+
+
+void indirectBlockReferences(int numiNode, int numberOfBlocks, int off, int depth, char type)
+{
     return;
 }
 
