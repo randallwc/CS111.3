@@ -234,7 +234,31 @@ void iNodeSummary(int table, int numiNode)
 
 void directoryEntries(int numiNode, int off)
 {
-    return;
+    off = 1024 + blocksize * (off - 1);
+    int boff = 0;
+    struct ext2_dir_entry dirEntry;
+
+    while (boff < blocksize)
+    {
+        memset(dirEntry.name, 0, 256);
+        if (pread(img, &dirEntry, sizeof(struct ext2_dir_entry), off + boff) != sizeof(struct ext2_dir_entry))
+        {
+            fprintf(stderr, "Error: Encountered an issue on call to pread() for directory entry\n");
+            exit(1);
+        }
+        if (entry.inode != 0)
+        {
+            memset(&entry.name[entry.name_len], 0, 256 - entry.name_len);
+            cout << "DIRENT,"
+                << numiNode << ','
+                << boff << ','
+                << dirEntry.inode << ','
+                << dirEntry.rec_len << ','
+                << dirEntry.name_len << ','
+                << dirEntry.name << endl;
+        }
+        boff += dirEntry.rec_len;
+    }
 }
 
 
