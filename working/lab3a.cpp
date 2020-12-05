@@ -9,15 +9,18 @@
 #include "ext2_fs.h"
 using namespace std;
 
+//GLOBAL STRUCTS
 struct ext2_super_block superblock;
 
+//GLOBAL VARS
 int img = -1;
 __u32 blocksize;
 
-void groupSummary(int index, __u32 max);
-void freeBlockBitmap(int index, int off, __u32 numBlocks);
-void freeiNodeBitmap(int index, int off, int table, __u32 numBytes);
-void iNodeSummary();
+void groupSummary(int index, __u32 max); /* read in the group and get a Summary */
+void freeBlockBitmap(int index, int off, __u32 numBlocks); /*  */
+void freeiNodeBitmap(int index, int off, int table, __u32 numBytes); /*  */
+void iNodeSummary(int table, int numiNode); /*  */
+void formatTime(__u32 time, char* timeStr); /*  */
 void directoryEntries();
 void indirectBlockReferences();
 
@@ -26,6 +29,7 @@ int main(int argc, char** argc)
     if (argc != 2)
         fprintf(stderr, "Error: Incorrect usage. Expected: ./lab3a [image]\n");
 
+    // open img in read only
     img = open(argv[1], O_RDONLY);
     if (img == -1)
     {
@@ -33,11 +37,14 @@ int main(int argc, char** argc)
         exit(1);
     }
     
-    if (pread(img, &superblock; sizeof(struct ext2_super_block), 1024) != sizeof(struct ext2_super_block))
+    // read in the superblock
+    if (pread(img, &superblock, sizeof(struct ext2_super_block), 1024) != sizeof(struct ext2_super_block))
     {
         fprintf(stderr, "Error: Encountered an issue on pread() for superblock\n");
         exit(1);
     }
+
+    // check if the file system is EXT2
     if (superblock.s_magic != EXT2_SUPER_MAGIC)
     {
         fprintf(stderr, "Error: File system is not EXT2\n");
@@ -48,13 +55,17 @@ int main(int argc, char** argc)
     
     /* superblock summary */
     cout << "SUPERBLOCK," 
-        << superblock.s_blocks_count << ','
-        << superblock.s_inodes_count << ','
-        << blocksize << ','
-        << superblock.s_inode_size << ','
-        << superblock.s_blocks_per_group << ','
-        << superblock.s_inodes_per_group << ','
-        << superblock.s_first_ino << endl;
+        << superblock.s_blocks_count << ','     /* total number of blocks (decimal) */
+        << superblock.s_inodes_count << ','     /* total number of i-nodes (decimal) */
+        << blocksize << ','                     /* block size (in bytes, decimal) */
+        << superblock.s_inode_size << ','       /* i-node size (in bytes, decimal) */
+        << superblock.s_blocks_per_group << ',' /* blocks per group (decimal) */
+        << superblock.s_inodes_per_group << ',' /* i-nodes per group (decimal) */
+        << superblock.s_first_ino << endl;      /* first non-reserved i-node (decimal) */
+
+    //get number of groups for groupSUmmary
+    __u32 numGroups = superblock.s_blocks_count / superblock.s_blocks_per_group;
+    numGroups += !! ((superblock.s_blocks_count) % (superblock.s_blocks_per_group));
 
     int i = 0;
     for (i = 0; i < numGroups; i++)
