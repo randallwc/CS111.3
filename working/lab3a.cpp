@@ -11,11 +11,12 @@ using namespace std;
 
 struct ext2_super_block superblock;
 
+int img = -1;
 __u32 blocksize;
 
-void groupSummary();
-void freeBlockEntries();
-void freeiNodeEntries();
+void groupSummary(int index, __u32 max);
+void freeBlockBitmap(int index, int off, __u32 numBlocks);
+void freeiNodeBitmap(int index, int off, int table, __u32 numBytes);
 void iNodeSummary();
 void directoryEntries();
 void indirectBlockReferences();
@@ -32,7 +33,7 @@ int main(int argc, char** argc)
         exit(1);
     }
     
-    if (pread(img, &superblock; sizeof(struct ext2_super_block), SUPERBLOCK_OFFSET) != sizeof(struct ext2_super_block))
+    if (pread(img, &superblock; sizeof(struct ext2_super_block), 1024) != sizeof(struct ext2_super_block))
     {
         fprintf(stderr, "Error: Encountered an issue on pread() for superblock\n");
         exit(1);
@@ -61,9 +62,6 @@ int main(int argc, char** argc)
         groupSummary(i, numGroups);
     }
     
-    //groupSummary();
-    //freeBlockEntries();
-    //freeiNodeEntries();
     //iNodeSummary();
     //directoryEntries();
     //indirectBlockReferences();
@@ -74,7 +72,7 @@ int main(int argc, char** argc)
 void groupSummary(int index, __u32 max)
 {
     struct ext2_group_desc group;
-    __32 offset = (superblock.s_first_data_block + 1) * blocksize;
+    __u32 offset = (superblock.s_first_data_block + 1) * blocksize;
     pread(img, &group, sizeof(group), offset);
     
     __u32 numBlocks = (superblock.s_blocks_count >= superblock.s_blocks_per_group) ?
@@ -83,7 +81,7 @@ void groupSummary(int index, __u32 max)
         superblock.s_inodes_count : (superblock.s_inodes_count % superblock.s_inodes_per_group);
     
     cout << "GROUP,"
-        << "0," // Only one group for 3a
+        << i << ',' // Only one group for 3a
         << numBlocks << ','
         << numiNodes << ','
         << superblock.s_free_blocks_count << ','
@@ -92,5 +90,63 @@ void groupSummary(int index, __u32 max)
         << group.bg_inode_bitmap << ','
         << group.bg_inode_table << endl;
 
+    freeBlockBitmap(index, group.bg_block_bitmap, numBlocks);
+
+    freeiNodeBitmap(index, group.bg_inode_bitmap, group.bg_inode_table, numiNodes / 8);
+
     return;
+}
+
+void freeBlockBitmap(int index, int off, __u32 numBlocks)
+{
+    off = 1024 + blocksize * (off - 1);
+    char* blockBitmap = malloc(blocksize);
+
+    if (pread(img, blockBitmap, blocksize, off) != numBlocks)
+    {
+        fprintf(stderr, "Error: Encountered an issue on pread() for bitmap\n");
+        exit(1);
+    }
+    
+    int blockNum = superblock.s_first_data_block + index * superblock.s_blocks_per_group;
+    int mask = 1;
+    int bit;
+    int i, j;
+    for (i = 0; i < numBlocks; i++)
+    {
+        bit = blockBitmap[i];
+        for (j = 0; j < 8; j++)
+        {
+            if (!(bit & 1))
+                cout << "BFREE," << blockNum << endl;
+            bit >>= 1;
+            blockNum++;
+        }
+    }
+
+    free(blockBitmap);
+    return;
+}
+
+void freeiNodeBitmap(int index, int off, int table, __u32 numBytes)
+{
+    off = 1024 + blocksize * (off - 1);
+    char* iNodeBitmap = malloc(blocksize);
+
+    pread(img, iNodeBitmap, blocksize, off);
+
+    int iNodeNum = superblock.s_inodes_per_group * index + 1;
+    int bit;
+    int i, j;
+    for (i = 0; i < numBytes; i++)
+    {
+        bit = iNodeBitmap[i];
+        for (j = 0; j < 8; j++)
+        {
+            if (!(bit & 1))
+                cout << "IFREE," << iNodeNum << endl;
+            else
+
+        }
+    }
 }
