@@ -1,20 +1,23 @@
 #include <iostream>
-#include <unistd.h>
-#include <cerrno>
-#include <cstring>
-#include <ctime>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include "ext2_fs.h"
 using namespace std;
+
+#include <unistd.h>     // pread
+#include <cerrno>       // error
+#include <cstring>      // string
+#include <ctime>        // time_t
+#include <fcntl.h>      // ...
+#include <sys/types.h>  // ...
+#include <sys/stat.h>   // ...
+#include "ext2_fs.h"    // header file
 
 //GLOBAL STRUCTS
 struct ext2_super_block superblock;
 
 //GLOBAL VARS
 int img = -1;
-__u32 blocksize;
+__u32 blocksize = 0;
+
+//HELPER FUNCTION DEFINITIONS
 /* read in the group and get a Summary */
 void groupSummary(int index, __u32 max);
 /* free block bitmap for each group */
@@ -24,14 +27,15 @@ void freeiNodeBitmap(int index, int off, int table, __u32 numBytes);
 /* summary of iNode */
 void iNodeSummary(int table, int numiNode);
 /* read direct block references */
-void directoryEntries(int numiNode, int off);
+void directoryEntries(int numParentiNode, int off);
 /* read indirect block references */
-void indirectBlockReferences(int numberOfiNodes, int numberOfBlocks, int off, int depth, char type);
+void indirectBlockReferences(int numiNode, int blockNumber, int off, int depth, char type);
 /* make a time string buffer */
 void formatTime(__u32 time, char* timeStr);
 
 int main(int argc, char** argc)
 {
+    // check that there is only one argument
     if (argc != 2)
         fprintf(stderr, "Error: Incorrect usage. Expected: ./lab3a [image]\n");
 
@@ -60,7 +64,7 @@ int main(int argc, char** argc)
     // get blocksize from the superblock
     blocksize = EXT2_MIN_BLOCK_SIZE << superblock.s_log_block_size;
     
-    /* superblock summary */
+    // superblock summary
     cout << "SUPERBLOCK," 
         << superblock.s_blocks_count << ','     /* total number of blocks (decimal) */
         << superblock.s_inodes_count << ','     /* total number of i-nodes (decimal) */
@@ -70,11 +74,11 @@ int main(int argc, char** argc)
         << superblock.s_inodes_per_group << ',' /* i-nodes per group (decimal) */
         << superblock.s_first_ino << endl;      /* first non-reserved i-node (decimal) */
 
-    //get number of groups for groupSUmmary
+    // get number of groups for groupSummary
     __u32 numGroups = superblock.s_blocks_count / superblock.s_blocks_per_group;
-    numGroups += !! ((superblock.s_blocks_count) % (superblock.s_blocks_per_group));
+    numGroups += !! (((int) superblock.s_blocks_count) % ((int) superblock.s_blocks_per_group));
 
-    int i = 0;
+    int i;
     for (i = 0; i < numGroups; i++)
     {
         groupSummary(i, numGroups);
@@ -85,18 +89,36 @@ int main(int argc, char** argc)
 
 void groupSummary(int index, __u32 max)
 {
+    // set up the blocks group descriptor struct
     struct ext2_group_desc group;
+
+    // get the offset
     __u32 offset = (superblock.s_first_data_block + 1) * blocksize;
+
+    __u32 numBlocks, numiNodes;
+
+    // read into the group struct
     if (pread(img, &group, sizeof(struct ext2_group_desc), offset) != sizeof(struct ext2_group_desc))
     {
         fprintf(stderr, "Error: Encountered an issue on pread() for group\n");
         exit(1);
     }
     
-    __u32 numBlocks = (superblock.s_blocks_count >= superblock.s_blocks_per_group) ?
-        superblock.s_blocks_count : (superblock.s_blocks_count % superblock.s_blocks_per_group);
-    __u32 numiNodes = (superblock.s_inodes_count >= superblock.s_inodes_per_group) ?
-        superblock.s_inodes_count : (superblock.s_inodes_count % superblock.s_inodes_per_group);
+    // get the number of blocks
+    if(superblock.s_blocks_count >= superblock.s_blocks_per_group){
+        numBlocks = superblock.s_blocks_count;
+    }
+    else{
+        numBlocks = superblock.s_blocks_count % superblock.s_blocks_per_group;
+    }
+
+    // get the number of inodes 
+    if(superblock.s_inodes_count >= superblock.s_inodes_per_group){
+        numiNodes = superblock.s_inodes_count;
+    }
+    else{
+        numiNodes = superblock.s_inodes_count % superblock.s_inodes_per_group;
+    }
     
     cout << "GROUP,"
         << "0,"                                  /* group number (decimal, starting from zero) -- only one group for 3a */
@@ -166,36 +188,54 @@ void freeiNodeBitmap(int index, int off, int table, __u32 numBytes)
             if (!(bit & mask))
                 cout << "IFREE," << iNodeNum << endl; // number of the free I-node (decimal)
             else
-               iNodeSummary(table, iNodeNum); 
+               iNodeSummary(table, iNodeNum);
         }
     }
 }
 
 void iNodeSummary(int table, int numiNode)
 {
-    long off = 1024 + blocksize * (table - 1) + 128*(numiNode - 1);
+    // get offset
+    long off = 1024 + blocksize * (table - 1) + 128 * (numiNode - 1);
 
     struct ext2_inode iNode;
+
+    // read into iNode struct
     if (pread(img, &iNode, sizeof(struct ext2_inode), off) != sizeof(struct ext2_inode))
     {
         fprintf(stderr, "Error: Encountered an issue on call to pread() for inode\n");
         exit(1);
     }
 
+    // if mode is 0 then no summary
+    if(iNode.i_mode == 0){
+        return;
+    }
+
+    // if no links then no summary
+    if(iNode.i_links_count == 0){
+        return;
+    }
+
     char type = '?';
     unsigned int mode = (__uint16_t)(iNode.i_mode >> 12);
+    
     if (mode == 0xa)
-        type = 's';
+        type = 's'; // symbolic link
+    
     else if (mode == 0x8)
-        type = 'f';
+        type = 'f'; // file
+    
     else if (mode == 0x4)
-        type = 'd';
+        type = 'd'; // directory
 
+    // format the times
     char ctime[18], mtime[18], atime[20];
-    formatTime(iNode.i_ctime, ctime);
-    formatTime(iNode.i_mtime, mtime);
-    formatTime(iNode.i_atime, atime);
+    formatTime(iNode.i_ctime, ctime); // time of last I-node change (mm/dd/yy hh:mm:ss, GMT)
+    formatTime(iNode.i_mtime, mtime); // modification time (mm/dd/yy hh:mm:ss, GMT)
+    formatTime(iNode.i_atime, atime); // time of last access (mm/dd/yy hh:mm:ss, GMT)
 
+    // 2 * blocks count / (2 << log2(Block size))
     int numBlocks = 2 * iNode.i_blocks / (2 << superblock.s_log_block_size);
 
     cout << "INODE,"
@@ -211,6 +251,8 @@ void iNodeSummary(int table, int numiNode)
         << iNode.i_size << ','         /* file size (decimal) */
         << numBlocks;                  /* number of (512 byte) blocks of disk space (decimal) taken up by this file */
 
+    // if the file is a symbolic link or the file size is greater than 60
+    // print pointers to blocks
     int i;
     if (type != 's' || iNode.i_size > 60)
         for (i = 0; i < 15, i++)
@@ -220,110 +262,116 @@ void iNodeSummary(int table, int numiNode)
     // if the file is a directory go into directory entries
     if (type == 'd')
         for (i = 0; i < 12; i++)
-            if (iNode.i_block[i] != 0)
-                directoryEntries(numiNode, iNode.i_block[i]);
+            if (iNode.i_block[i] != 0) // recursive
+                directoryEntries(numiNode, iNode.i_block[i]); // input parent inode and offset
 
-    int numberOfBlocks = 12;
+    int block_offset = 12;
     int depth = 1;
     if (iNode.i_block[12] != 0)
-        indirectBlockReferences(numiNode, iNode.i_block[12], numberOfBlocks, depth, type);
+        indirectBlockReferences(numiNode, iNode.i_block[12], block_offset, depth, type);
 
-    numberOfBlocks += 256;
-    depth++;
+    block_offset += 256;
+    depth++;// 2
     if (iNode.i_block[13] != 0)
-        indirectBlockReferences(numiNode, iNode.i_block[13], numberOfBlocks, depth, type);
+        indirectBlockReferences(numiNode, iNode.i_block[13], block_offset, depth, type);
 
-    numberOfBlocks += 65536;
-    depth++;
+    block_offset += 65536;
+    depth++;// 3
     if (iNode.i_block[14] != 0)
-        indirectBlockReferences(numiNode, iNode.i_block[14], numberOfBlocks, depth, type);
+        indirectBlockReferences(numiNode, iNode.i_block[14], block_offset, depth, type);
 
     return;
 }
 
-void directoryEntries(int numiNode, int off)
+void directoryEntries(int numParentiNode, int off)
 {
+    // get offsets
     off = 1024 + blocksize * (off - 1);
-    int boff = 0;
+    int byte_offset = 0;
+
+    // make dirEntry struct
     struct ext2_dir_entry dirEntry;
 
-    while (boff < blocksize)
+    while (byte_offset < blocksize)
     {
+        // set name entry to 0
         memset(dirEntry.name, 0, 256);
-        if (pread(img, &dirEntry, sizeof(struct ext2_dir_entry), off + boff) != sizeof(struct ext2_dir_entry))
+
+        // read from img into the dirEntry struct
+        if (pread(img, &dirEntry, sizeof(struct ext2_dir_entry), off + byte_offset) != sizeof(struct ext2_dir_entry))
         {
             fprintf(stderr, "Error: Encountered an issue on call to pread() for directory entry\n");
             exit(1);
         }
-        if (entry.inode != 0)
+
+        // if the inode number is not 0 then print
+        if (dirEntry.inode != 0)
         {
-            memset(&entry.name[entry.name_len], 0, 256 - entry.name_len);
+            memset(&dirEntry.name[dirEntry.name_len], 0, 256 - dirEntry.name_len);
             cout << "DIRENT,"
-                << numiNode << ','          /* parent inode number (decimal) ... the I-node number of the directory that contains this entry */
-                << boff << ','              /* logical byte offset (decimal) of this entry within the directory */
+                << numParentiNode << ','    /* parent inode number (decimal) ... the I-node number of the directory that contains this entry */
+                << byte_offset << ','       /* logical byte offset (decimal) of this entry within the directory */
                 << dirEntry.inode << ','    /* inode number of the referenced file (decimal) */
                 << dirEntry.rec_len << ','  /* entry length (decimal) */
                 << dirEntry.name_len << ',' /* name length (decimal) */
                 << dirEntry.name << endl;   /* name (string, surrounded by single-quotes). Don't worry about escaping, we promise there will be no single-quotes or commas in any of the file names. */
         }
-        boff += dirEntry.rec_len;
+        byte_offset += dirEntry.rec_len;
     }
 }
 
-void indirectBlockReferences(int numberOfiNodes, int numberOfBlocks, int off, int depth, char type)
+void indirectBlockReferences(int numiNode, int blockNumber, int off, int depth, char type)
 {
-    // get indent length
+    // get length
     __u32 length = blocksize / sizeof(__u32);
 
     // create space for the indent array
-    __u32 * i_arr = malloc(blocksize);
+    __u32 * blockNumber_arr = malloc(blocksize);
 
     // read into the array
-    pread(img, i_arr, blocksize, numberOfBlocks * blocksize);
+    pread(img, blockNumber_arr, blocksize, blockNumber * blocksize);
 
     int i;
     for(i = 0; i < length; i++){
         // when 
-        if(i_arr[i]){
+        if(blockNumber_arr[i]){
             cout << "INDIRECT,"
-                 << numiNode << ','       /* I-node number of the owning file (decimal) */
-                 << depth << ',' /*       (decimal) level of indirection for the block being scanned ... 
-                                              1 for single indirect, 
-                                              2 for double indirect, 
-                                              3 for triple */
-                 << off << ','            /* logical block offset (decimal) represented by the referenced block. 
-                                           If the referenced block is a data block, this is the logical block offset 
-                                           of that block within the file. 
-                                           If the referenced block is a single- or double-indirect block, 
-                                           this is the same as the logical offset of the first data block to which it refers. */
-                 << numberOfBlocks << ',' /* block number of the (1, 2, 3)
-                                            indirect block being scanned (decimal) . . . 
-                                            not the highest level block (in the recursive scan), 
-                                            but the lower level block that contains the block reference reported by this entry. */
-                 << i_arr[i] << endl;     /* block number of the referenced block (decimal) */
+                 << numiNode << ','             /* I-node number of the owning file (decimal) */
+                 << depth << ','                /*(decimal) level of indirection for the block being scanned ... 
+                                                      1 for single indirect, 
+                                                      2 for double indirect, 
+                                                      3 for triple */
+                 << off << ','                  /* logical block offset (decimal) represented by the referenced block. 
+                                                      If the referenced block is a data block, this is the logical block offset 
+                                                      of that block within the file. 
+                                                      If the referenced block is a single- or double-indirect block, 
+                                                      this is the same as the logical offset of the first data block to which it refers. */
+                 << blockNumber << ','          /* block number of the (1, 2, 3)
+                                                      indirect block being scanned (decimal) . . . 
+                                                      not the highest level block (in the recursive scan), 
+                                                      but the lower level block that contains the block reference reported by this entry. */
+                 << blockNumber_arr[i] << endl; /* block number of the referenced block (decimal) */
 
             // check if it is a directory with a depth of 1
             if(depth == 1 && type == 'd'){
-                directoryEntries(numberOfBlocks, i_arr[i]);
+                directoryEntries(blockNumber, blockNumber_arr[i]);
             }
 
             // if the depth is greater than 1 then do an indirect block reference
             if(depth > 1){
-                indirectBlockReferences(numberOfiNodes, i_arr[i], off, --depth, type);
+                indirectBlockReferences(numiNode, blockNumber_arr[i], off, depth - 1, type);
             }
         }
 
-        // if depth is 1 then increment offset
+        // 1 for single indirect
         if(depth == 1){
             off++;
         }
-
-        // if depth is 2 then add 256 to offset
+        // 2 for double indirect
         else if(depth == 2){
             off += 256;
         }
-
-        // if depth is 3 then add 65536 to offset
+        // 3 for triple
         else if(depth == 3){
             off += 65536;
         }
@@ -334,7 +382,7 @@ void indirectBlockReferences(int numberOfiNodes, int numberOfBlocks, int off, in
     }
 
     // free the array
-    free(i_arr);
+    free(blockNumber_arr);
 
     return;
 }
