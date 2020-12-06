@@ -275,8 +275,8 @@ void iNodeSummary(int table, int numiNode)
     // file will contain zero data blocks if the file size is greater than 60
     if (type != 's' || iNode.i_size > 60)
         for (int i = 0; i < 15; i++)
-            cout << iNode.i_block[i] << ',';
-    cout << endl;
+            printf(",%d", iNode.i_block[i]);
+    printf("\n");
 
     // if the file is a directory go into directory entries
     if (type == 'd')
