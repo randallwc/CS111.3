@@ -14,6 +14,7 @@ default: $(NAME).cpp ext2_fs.h
 clean:
 	rm -f $(NAME)
 	rm -f $(NAME)-$(UID).tar.gz
+	rm -f out.csv out.diff temp.img trivial_sorted.csv
 
 check: default trivial.img trivial.csv
 	# create a copy of the image
@@ -27,9 +28,6 @@ check: default trivial.img trivial.csv
 
 	# get diff between both sorted outputs
 	diff -u out.csv trivial_sorted.csv > out.diff
-
-	# delete image copy and sorted trivial.csv
-	rm -f temp.img trivial_sorted.csv
 
 dist:
 	tar -czf $(NAME)-$(UID).tar.gz $(FILES)
