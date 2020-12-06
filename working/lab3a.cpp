@@ -203,7 +203,7 @@ void freeiNodeBitmap(int index, int off, int table, __u32 numBytes)
             if (!(int)(bit & 1))
                 printf("IFREE,%d\n", iNodeNum); // number of the free I-node (decimal)
             else
-               iNodeSummary(table, iNodeNum);
+                iNodeSummary(table, iNodeNum);
 
             // shift bit and increment iNodeNum
             bit = bit >> 1;
@@ -257,24 +257,37 @@ void iNodeSummary(int table, int numiNode)
     // 2 * blocks count / (2 << log2(Block size))
     int numBlocks = 2 * iNode.i_blocks / (2 << superblock.s_log_block_size);
 
-    //TODO
-    /* fix i_mode line */
-    cout << "INODE,"
-         << numiNode << ','            /* inode number (decimal) */
-         << type << ',';               /* file type ('f' for file, 'd' for directory, 's' for symbolic link, '?" for anything else) */
+    // //TODO
+    // /* fix i_mode line */
+    // cout << "INODE,"
+    //      << numiNode << ','            /* inode number (decimal) */
+    //      << type << ',';               /* file type ('f' for file, 'd' for directory, 's' for symbolic link, '?" for anything else) */
 
-    /* mode (low order 12-bits, octal ... suggested format "%o") */
-    cout << oct << (iNode.i_mode & 0xFFFU);
+    // /* mode (low order 12-bits, octal ... suggested format "%o") */
+    // cout << oct << (iNode.i_mode & 0xFFFU);
          
-    cout << ','
-         << iNode.i_uid << ','         /* owner (decimal) */
-         << iNode.i_gid << ','         /* group (decimal) */
-         << iNode.i_links_count << ',' /* link count (decimal) */
-         << ctime << ','               /* time of last I-node change (mm/dd/yy hh:mm:ss, GMT) */
-         << mtime << ','               /* modification time (mm/dd/yy hh:mm:ss, GMT) */
-         << atime << ','               /* time of last access (mm/dd/yy hh:mm:ss, GMT) */
-         << iNode.i_size << ','        /* file size (decimal) */
-         << numBlocks;                 /* number of (512 byte) blocks of disk space (decimal) taken up by this file */
+    // cout << ','
+    //      << iNode.i_uid << ','         /* owner (decimal) */
+    //      << iNode.i_gid << ','         /* group (decimal) */
+    //      << iNode.i_links_count << ',' /* link count (decimal) */
+    //      << ctime << ','               /* time of last I-node change (mm/dd/yy hh:mm:ss, GMT) */
+    //      << mtime << ','               /* modification time (mm/dd/yy hh:mm:ss, GMT) */
+    //      << atime << ','               /* time of last access (mm/dd/yy hh:mm:ss, GMT) */
+    //      << iNode.i_size << ','        /* file size (decimal) */
+    //      << numBlocks;                 /* number of (512 byte) blocks of disk space (decimal) taken up by this file */
+
+    printf("INODE,%d,%c,%o,%d,%d,%d,%s,%s,%s,%d,%d",
+    numiNode,
+    type,
+    iNode.i_mode & 0xFFF,
+    iNode.i_uid,
+    iNode.i_gid,
+    iNode.i_links_count,
+    ctime,
+    mtime,
+    atime,
+    iNode.i_size,
+    numBlocks);
 
     // if the file is a symbolic link
     // print symbolic links
