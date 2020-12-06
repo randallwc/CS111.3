@@ -153,11 +153,11 @@ void freeBlockBitmap(int index, int offset, __u32 numBlocks)
     
     int blockNum = superblock.s_first_data_block + index * superblock.s_blocks_per_group;
     int mask = 1;
-    int j, bit;
+    char bit;
     for (__u32 i = 0; i < numBlocks; i++)
     {
         bit = blockBitmap[i];
-        for (j = 0; j < 8; j++)
+        for (__u8 j = 0; j < 8; j++)
         {
             if (!(bit & mask))
                 cout << "BFREE," << blockNum << endl; // number of the free block (decimal)
@@ -197,14 +197,14 @@ void freeiNodeBitmap(int index, int offset, int table, __u32 numBytes)
     mask = 1;
 
     // loop until the number of bytes
-    for (unsigned int i = 0; i < (unsigned int)numBytes; i++)
+    for (__u32 i = 0; i < numBytes; i++)
     {
         bit = iNodeBitmap[i];
 
         // loop through the bitmask
-        for (unsigned int j = 0; j < 8; j++)
+        for (__u8 j = 0; j < 8; j++)
         {
-            if (!(int)(bit & mask))
+            if (!(bit & mask))
                 printf("IFREE,%d\n", iNodeNum); // number of the free I-node (decimal)
             else
                 iNodeSummary(table, iNodeNum);
@@ -221,7 +221,7 @@ void freeiNodeBitmap(int index, int offset, int table, __u32 numBytes)
 void iNodeSummary(int table, int numiNode)
 {
     // get offset
-    long offset = 1024 + blocksize * (table - 1) + 128 * (numiNode - 1);
+    __u32 offset = 1024 + blocksize * (table - 1) + 128 * (numiNode - 1);
 
     struct ext2_inode iNode;
 
