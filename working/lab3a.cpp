@@ -151,11 +151,7 @@ void freeBlockBitmap(int index, int off, __u32 numBlocks)
 
     //TODO
     /* check sizing here */
-    if (pread(img, blockBitmap, blocksize, off) != numBlocks)
-    {
-        fprintf(stderr, "Error: Encountered an issue on pread() for bitmap\n");
-        exit(1);
-    }
+    pread(img, blockBitmap, blocksize, off);
     
     int blockNum = superblock.s_first_data_block + index * superblock.s_blocks_per_group;
     int mask = 1;
