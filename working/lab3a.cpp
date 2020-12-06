@@ -311,12 +311,8 @@ void directoryEntries(int numParentiNode, int off)
         // set name entry to 0
         memset(dirEntry.name, 0, 256);
 
-        // read from img into the dirEntry struct
-        if (pread(img, &dirEntry, sizeof(struct ext2_dir_entry), off + byte_offset) != sizeof(struct ext2_dir_entry))
-        {
-            fprintf(stderr, "Error: Encountered an issue on call to pread() for directory entry\n");
-            exit(1);
-        }
+        /* read from img into the dirEntry struct
+        pread(img, &dirEntry, sizeof(struct ext2_dir_entry), off + byte_offset)
 
         // if the inode number is not 0 then print
         if (dirEntry.inode != 0)
@@ -328,7 +324,7 @@ void directoryEntries(int numParentiNode, int off)
                  << dirEntry.inode << ','    /* inode number of the referenced file (decimal) */
                  << dirEntry.rec_len << ','  /* entry length (decimal) */
                  << dirEntry.name_len << ',' /* name length (decimal) */
-                 << dirEntry.name << endl;   /* name (string, surrounded by single-quotes). Don't worry about escaping, we promise there will be no single-quotes or commas in any of the file names. */
+                 << '\'' << dirEntry.name << '\'' << endl;   /* name (string, surrounded by single-quotes). Don't worry about escaping, we promise there will be no single-quotes or commas in any of the file names. */
         }
         byte_offset += dirEntry.rec_len;
     }
