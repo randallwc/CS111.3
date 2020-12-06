@@ -202,7 +202,7 @@ void freeiNodeBitmap(int index, int off, int table, __u32 numBytes)
         {
             if (!(int)(bit & 1))
                 // cout << "IFREE," << iNodeNum << endl; // number of the free I-node (decimal)
-                printf("IFREE,%d\n", ninode);
+                printf("IFREE,%d\n", iNodeNum);
             else
                iNodeSummary(table, iNodeNum);
 
