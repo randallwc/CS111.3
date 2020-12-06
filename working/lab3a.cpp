@@ -5,7 +5,7 @@ using namespace std;
 #include <cerrno>       // error
 #include <cstring>      // string
 #include <ctime>        // time_t
-#include <fcntl.h>      // ...
+#include <fcntl.h>      // open
 #include <sys/types.h>  // ...
 #include <sys/stat.h>   // ...
 #include "ext2_fs.h"    // header file
@@ -22,15 +22,15 @@ __u32 blocksize = 0;
 // void groupSummary(int index, __u32 max);//TODO
 void groupSummary(int index);
 /* free block bitmap for each group */
-void freeBlockBitmap(int index, int off, __u32 numBlocks);
+void freeBlockBitmap(int index, int offset, __u32 numBlocks);
 /* free iNode Bitmap */
-void freeiNodeBitmap(int index, int off, int table, __u32 numBytes);
+void freeiNodeBitmap(int index, int offset, int table, __u32 numBytes);
 /* summary of iNode */
 void iNodeSummary(int table, int numiNode);
 /* read direct block references */
-void directoryEntries(int numParentiNode, int off);
+void directoryEntries(int numParentiNode, int offset);
 /* read indirect block references */
-void indirectBlockReferences(int numiNode, int blockNumber, int off, int depth, char type);
+void indirectBlockReferences(int numiNode, int blockNumber, int offset, int depth, char type);
 /* make a time string buffer */
 void formatTime(__u32 time, char* timeStr);
 
@@ -62,8 +62,8 @@ int main(int argc, char** argv)
         exit(1);
     }
 
-    // get blocksize from the superblock
-    blocksize = EXT2_MIN_BLOCK_SIZE << superblock.s_log_block_size; // superblock is constant 1024
+    // get blocksize from the superblock -- superblock is constant 1024
+    blocksize = EXT2_MIN_BLOCK_SIZE << superblock.s_log_block_size;
     
     // superblock summary
     cout << "SUPERBLOCK," 
@@ -75,20 +75,19 @@ int main(int argc, char** argv)
          << superblock.s_inodes_per_group << ',' /* i-nodes per group (decimal) */
          << superblock.s_first_ino << endl;      /* first non-reserved i-node (decimal) */
 
-    // get number of groups for groupSummary
-    __u32 numGroups = superblock.s_blocks_count / superblock.s_blocks_per_group;
-    numGroups += !! (((int) superblock.s_blocks_count) % ((int) superblock.s_blocks_per_group));
+    // // get number of groups for groupSummary
+    // __u32 numGroups = superblock.s_blocks_count / superblock.s_blocks_per_group;
+    // numGroups += !! (((int) superblock.s_blocks_count) % ((int) superblock.s_blocks_per_group));
 
-    for (__u32 i = 0; i < numGroups; i++)
-        // groupSummary(i, numGroups);//TODO
-        groupSummary(i);
+    // for (__u32 i = 0; i < numGroups; i++)
+    //     groupSummary(i);
+
+    // just for lab3a
+    groupSummary(0);
 
     return 0;
 }
 
-//TODO
-/* fix `__u32 max` param */
-// void groupSummary(int index, __u32 max)
 void groupSummary(int index)
 {
     // set up the blocks group descriptor struct
@@ -106,9 +105,7 @@ void groupSummary(int index)
         exit(1);
     }
     
-    //TODO
     /* check dec of numBlocks and numiNodes */
-    /* this is where `max` would be used */
     // get the number of blocks
     if(superblock.s_blocks_count >= superblock.s_blocks_per_group){
         numBlocks = superblock.s_blocks_count;
@@ -126,8 +123,6 @@ void groupSummary(int index)
     }
     
     cout << "GROUP,"
-         //TODO
-         /* check next line */
          << "0,"                                  /* group number (decimal, starting from zero) -- only one group for 3a */
          << numBlocks << ','                      /* total number of blocks in this group (decimal) */
          << numiNodes << ','                      /* total number of i-nodes in this group (decimal) */
@@ -144,14 +139,13 @@ void groupSummary(int index)
     return;
 }
 
-void freeBlockBitmap(int index, int off, __u32 numBlocks)
+void freeBlockBitmap(int index, int offset, __u32 numBlocks)
 {
-    off = 1024 + blocksize * (off - 1);
-    char* blockBitmap = (char *)malloc(blocksize);
+    offset = 1024 + blocksize * (offset - 1);
+    char* blockBitmap = (char *)malloc(blocksize); // TODO -- use new
 
-    //TODO
-    /* check sizing here */
-    pread(img, blockBitmap, blocksize, off);
+    // TODO -- error check
+    pread(img, blockBitmap, blocksize, offset);
     
     int blockNum = superblock.s_first_data_block + index * superblock.s_blocks_per_group;
     int mask = 1;
@@ -170,27 +164,29 @@ void freeBlockBitmap(int index, int off, __u32 numBlocks)
         }
     }
 
-    free(blockBitmap);
+    free(blockBitmap); // TODO -- use delete
     return;
 }
 
-void freeiNodeBitmap(int index, int off, int table, __u32 numBytes)
+void freeiNodeBitmap(int index, int offset, int table, __u32 numBytes)
 {
     // get offset
-    unsigned long off_tmp = 1024 + blocksize * (off - 1);
+    offset = 1024 + blocksize * (offset - 1);
 
-    // malloc iNode bitmap
-    unsigned char* iNodeBitmap = (unsigned char*)malloc(blocksize);
+    // set iNode bitmap
+    unsigned char* iNodeBitmap = (unsigned char*)malloc(blocksize);//TODO -- use new
 
+    // TODO -- error check
     // read into the iNode bitmap
-    pread(img, iNodeBitmap, blocksize, off_tmp);
+    pread(img, iNodeBitmap, blocksize, offset);
 
     //  get number of inodes
-    unsigned int iNodeNum = superblock.s_inodes_per_group * index;
+    __u32 iNodeNum = superblock.s_inodes_per_group * index;
     iNodeNum += 1;
 
     // set up bitmask
-    unsigned char bit;
+    unsigned char bit, mask;
+    mask = 1;
 
     // loop until the number of bytes
     for (unsigned int i = 0; i < (unsigned int)numBytes; i++)
@@ -200,7 +196,7 @@ void freeiNodeBitmap(int index, int off, int table, __u32 numBytes)
         // loop through the bitmask
         for (unsigned int j = 0; j < 8; j++)
         {
-            if (!(int)(bit & 1))
+            if (!(int)(bit & mask))
                 printf("IFREE,%d\n", iNodeNum); // number of the free I-node (decimal)
             else
                 iNodeSummary(table, iNodeNum);
@@ -210,17 +206,19 @@ void freeiNodeBitmap(int index, int off, int table, __u32 numBytes)
             iNodeNum++;
         }
     }
+
+    free(iNodeBitmap);//TODO -- use delete
 }
 
 void iNodeSummary(int table, int numiNode)
 {
     // get offset
-    long off = 1024 + blocksize * (table - 1) + 128 * (numiNode - 1);
+    long offset = 1024 + blocksize * (table - 1) + 128 * (numiNode - 1);
 
     struct ext2_inode iNode;
 
     // read into iNode struct
-    if (pread(img, &iNode, sizeof(struct ext2_inode), off) != sizeof(struct ext2_inode))
+    if (pread(img, &iNode, sizeof(struct ext2_inode), offset) != sizeof(struct ext2_inode))
     {
         fprintf(stderr, "Error: Encountered an issue on call to pread() for inode\n");
         exit(1);
@@ -302,10 +300,10 @@ void iNodeSummary(int table, int numiNode)
     return;
 }
 
-void directoryEntries(int numParentiNode, int off)
+void directoryEntries(int numParentiNode, int offset)
 {
     // get offsets
-    off = 1024 + blocksize * (off - 1);
+    offset = 1024 + blocksize * (offset - 1);
     __u32 byte_offset = 0;
 
     // make dirEntry struct
@@ -317,7 +315,7 @@ void directoryEntries(int numParentiNode, int off)
         memset(dirEntry.name, 0, 256);
 
         /* read from img into the dirEntry struct */
-        pread(img, &dirEntry, sizeof(dirEntry), off + byte_offset);
+        pread(img, &dirEntry, sizeof(dirEntry), offset + byte_offset);
 
         // if the inode number is not 0 then print
         if (dirEntry.inode != 0)
@@ -335,13 +333,13 @@ void directoryEntries(int numParentiNode, int off)
     }
 }
 
-void indirectBlockReferences(int numiNode, int blockNumber, int off, int depth, char type)
+void indirectBlockReferences(int numiNode, int blockNumber, int offset, int depth, char type)
 {
     // get length
     __u32 length = blocksize / sizeof(__u32);
 
     // create space for the indent array
-    __u32 * blockNumber_arr = (__u32 *)malloc(blocksize);
+    __u32 * blockNumber_arr = (__u32 *)malloc(blocksize);// TODO -- use new
 
     // read into the array
     pread(img, blockNumber_arr, blocksize, blockNumber * blocksize);
@@ -355,7 +353,7 @@ void indirectBlockReferences(int numiNode, int blockNumber, int off, int depth, 
                                                       1 for single indirect, 
                                                       2 for double indirect, 
                                                       3 for triple */
-                 << off << ','                  /* logical block offset (decimal) represented by the referenced block. 
+                 << offset << ','                  /* logical block offset (decimal) represented by the referenced block. 
                                                       If the referenced block is a data block, this is the logical block offset 
                                                       of that block within the file. 
                                                       If the referenced block is a single- or double-indirect block, 
@@ -373,21 +371,21 @@ void indirectBlockReferences(int numiNode, int blockNumber, int off, int depth, 
 
             // if the depth is greater than 1 then do an indirect block reference
             if(depth > 1){
-                indirectBlockReferences(numiNode, blockNumber_arr[i], off, depth - 1, type);
+                indirectBlockReferences(numiNode, blockNumber_arr[i], offset, depth - 1, type);
             }
         }
 
         // 1 for single indirect
         if(depth == 1){
-            off++;
+            offset++;
         }
         // 2 for double indirect
         else if(depth == 2){
-            off += 256;
+            offset += 256;
         }
         // 3 for triple
         else if(depth == 3){
-            off += 65536;
+            offset += 65536;
         }
         else{
             fprintf(stderr, "invalid depth\n");
@@ -396,7 +394,7 @@ void indirectBlockReferences(int numiNode, int blockNumber, int off, int depth, 
     }
 
     // free the array
-    free(blockNumber_arr);
+    free(blockNumber_arr); // TODO -- use delete
 
     return;
 }
