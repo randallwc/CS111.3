@@ -6,8 +6,6 @@ using namespace std;
 #include <cstring>      // string
 #include <ctime>        // time_t
 #include <fcntl.h>      // open
-#include <sys/types.h>  // ...
-#include <sys/stat.h>   // ...
 #include "ext2_fs.h"    // header file
 
 //GLOBAL STRUCTS
@@ -75,12 +73,14 @@ int main(int argc, char** argv)
          << superblock.s_inodes_per_group << ',' /* i-nodes per group (decimal) */
          << superblock.s_first_ino << endl;      /* first non-reserved i-node (decimal) */
 
-    // // get number of groups for groupSummary
-    // __u32 numGroups = superblock.s_blocks_count / superblock.s_blocks_per_group;
-    // numGroups += !! (((int) superblock.s_blocks_count) % ((int) superblock.s_blocks_per_group));
+    /* FOR LAB3b
+    // get number of groups for groupSummary
+    __u32 numGroups = superblock.s_blocks_count / superblock.s_blocks_per_group;
+    numGroups += !! (((int) superblock.s_blocks_count) % ((int) superblock.s_blocks_per_group));
 
-    // for (__u32 i = 0; i < numGroups; i++)
-    //     groupSummary(i);
+    for (__u32 i = 0; i < numGroups; i++)
+        groupSummary(i);
+    */
 
     // just for lab3a
     groupSummary(0);
@@ -256,17 +256,17 @@ void iNodeSummary(int table, int numiNode)
     int numBlocks = 2 * iNode.i_blocks / (2 << superblock.s_log_block_size);
 
     printf("INODE,%d,%c,%o,%d,%d,%d,%s,%s,%s,%d,%d",
-    numiNode,             /* inode number (decimal) */
-    type,                 /* file type ('f' for file, 'd' for directory, 's' for symbolic link, '?' for anything else) */
-    iNode.i_mode & 0xFFF, /* mode (low order 12-bits, octal ... suggested format "%o") */
-    iNode.i_uid,          /* owner (decimal) */
-    iNode.i_gid,          /* group (decimal) */
-    iNode.i_links_count,  /* link count (decimal) */
-    ctime,                /* time of last I-node change (mm/dd/yy hh:mm:ss, GMT) */
-    mtime,                /* modification time (mm/dd/yy hh:mm:ss, GMT) */
-    atime,                /* time of last access (mm/dd/yy hh:mm:ss, GMT) */
-    iNode.i_size,         /* file size (decimal) */
-    numBlocks);           /* number of (512 byte) blocks of disk space (decimal) taken up by this file */
+        numiNode,             /* inode number (decimal) */
+        type,                 /* file type ('f' for file, 'd' for directory, 's' for symbolic link, '?' for anything else) */
+        iNode.i_mode & 0xFFF, /* mode (low order 12-bits, octal ... suggested format "%o") */
+        iNode.i_uid,          /* owner (decimal) */
+        iNode.i_gid,          /* group (decimal) */
+        iNode.i_links_count,  /* link count (decimal) */
+        ctime,                /* time of last I-node change (mm/dd/yy hh:mm:ss, GMT) */
+        mtime,                /* modification time (mm/dd/yy hh:mm:ss, GMT) */
+        atime,                /* time of last access (mm/dd/yy hh:mm:ss, GMT) */
+        iNode.i_size,         /* file size (decimal) */
+        numBlocks);           /* number of (512 byte) blocks of disk space (decimal) taken up by this file */
 
     // if the file is a symbolic link
     // print symbolic links
@@ -314,6 +314,7 @@ void directoryEntries(int numParentiNode, int offset)
         // set name entry to 0
         memset(dirEntry.name, 0, 256);
 
+        //TODO -- error check pread
         /* read from img into the dirEntry struct */
         pread(img, &dirEntry, sizeof(dirEntry), offset + byte_offset);
 
@@ -322,12 +323,12 @@ void directoryEntries(int numParentiNode, int offset)
         {
             memset(&dirEntry.name[dirEntry.name_len], 0, 256 - dirEntry.name_len);
             cout << "DIRENT,"
-                 << numParentiNode << ','    /* parent inode number (decimal) ... the I-node number of the directory that contains this entry */
-                 << byte_offset << ','       /* logical byte offset (decimal) of this entry within the directory */
-                 << dirEntry.inode << ','    /* inode number of the referenced file (decimal) */
-                 << dirEntry.rec_len << ','  /* entry length (decimal) */
+                 << numParentiNode << ','                     /* parent inode number (decimal) ... the I-node number of the directory that contains this entry */
+                 << byte_offset << ','                        /* logical byte offset (decimal) of this entry within the directory */
+                 << dirEntry.inode << ','                     /* inode number of the referenced file (decimal) */
+                 << dirEntry.rec_len << ','                   /* entry length (decimal) */
                  << (unsigned short) dirEntry.name_len << ',' /* name length (decimal) */
-                 << '\'' << dirEntry.name << '\'' << endl;   /* name (string, surrounded by single-quotes). Don't worry about escaping, we promise there will be no single-quotes or commas in any of the file names. */
+                 << '\'' << dirEntry.name << '\'' << endl;    /* name (string, surrounded by single-quotes). Don't worry about escaping, we promise there will be no single-quotes or commas in any of the file names. */
         }
         byte_offset += dirEntry.rec_len;
     }
@@ -341,6 +342,7 @@ void indirectBlockReferences(int numiNode, int blockNumber, int offset, int dept
     // create space for the indent array
     __u32 * blockNumber_arr = (__u32 *)malloc(blocksize);// TODO -- use new
 
+    // TODO -- error check pread
     // read into the array
     pread(img, blockNumber_arr, blocksize, blockNumber * blocksize);
 
@@ -350,18 +352,18 @@ void indirectBlockReferences(int numiNode, int blockNumber, int offset, int dept
             cout << "INDIRECT,"
                  << numiNode << ','             /* I-node number of the owning file (decimal) */
                  << depth << ','                /*(decimal) level of indirection for the block being scanned ... 
-                                                      1 for single indirect, 
-                                                      2 for double indirect, 
-                                                      3 for triple */
-                 << offset << ','                  /* logical block offset (decimal) represented by the referenced block. 
-                                                      If the referenced block is a data block, this is the logical block offset 
-                                                      of that block within the file. 
-                                                      If the referenced block is a single- or double-indirect block, 
-                                                      this is the same as the logical offset of the first data block to which it refers. */
+                                                        1 for single indirect, 
+                                                        2 for double indirect, 
+                                                        3 for triple */
+                 << offset << ','               /* logical block offset (decimal) represented by the referenced block. 
+                                                        If the referenced block is a data block, this is the logical block offset 
+                                                        of that block within the file. 
+                                                        If the referenced block is a single- or double-indirect block, 
+                                                        this is the same as the logical offset of the first data block to which it refers. */
                  << blockNumber << ','          /* block number of the (1, 2, 3)
-                                                      indirect block being scanned (decimal) . . . 
-                                                      not the highest level block (in the recursive scan), 
-                                                      but the lower level block that contains the block reference reported by this entry. */
+                                                        indirect block being scanned (decimal) . . . 
+                                                        not the highest level block (in the recursive scan), 
+                                                        but the lower level block that contains the block reference reported by this entry. */
                  << blockNumber_arr[i] << endl; /* block number of the referenced block (decimal) */
 
             // check if it is a directory with a depth of 1
