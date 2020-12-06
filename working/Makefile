@@ -16,10 +16,19 @@ clean:
 	rm -f $(NAME)-$(UID).tar.gz
 
 check: default trivial.img trivial.csv
+	# create a copy of the image
 	cp trivial.img temp.img
+
+	# get sorted output of lab3a on trivial.img
 	./lab3a temp.img | sort > out.csv
+
+	# get the sorted output to compare to
 	cat trivial.csv | sort > sorted.csv
+
+	# get diff between both sorted outputs
 	diff -u out.csv sorted.csv > out.diff
+
+	# delete image copy
 	rm -rf temp.img sorted.csv
 
 dist:
