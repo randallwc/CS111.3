@@ -259,7 +259,7 @@ void iNodeSummary(int table, int numiNode)
 
     printf("INODE,%d,%c,%o,%d,%d,%d,%s,%s,%s,%d,%d",
     numiNode,             /* inode number (decimal) */
-    type,                 /* file type ('f' for file, 'd' for directory, 's' for symbolic link, '?" for anything else) */
+    type,                 /* file type ('f' for file, 'd' for directory, 's' for symbolic link, '?' for anything else) */
     iNode.i_mode & 0xFFF, /* mode (low order 12-bits, octal ... suggested format "%o") */
     iNode.i_uid,          /* owner (decimal) */
     iNode.i_gid,          /* group (decimal) */
