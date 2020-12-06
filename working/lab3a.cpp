@@ -311,7 +311,7 @@ void directoryEntries(int numParentiNode, int off)
         // set name entry to 0
         memset(dirEntry.name, 0, 256);
 
-        /* read from img into the dirEntry struct
+        /* read from img into the dirEntry struct */
         pread(img, &dirEntry, sizeof(struct ext2_dir_entry), off + byte_offset)
 
         // if the inode number is not 0 then print
