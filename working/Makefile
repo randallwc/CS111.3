@@ -3,7 +3,7 @@
 # ID: 805167986,805112866
 
 CC=g++
-CFLAGS=-Wall -Wextra -g
+CFLAGS=-Wall -Wextra -g -static-libstdc++
 NAME=lab3a
 UID=805167986
 FILES=README Makefile lab3a.cpp ext2_fs.h
