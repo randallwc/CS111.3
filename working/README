@@ -7,5 +7,6 @@ Files:
 Makefile	... makefile with 3 arguments default, dist, and clean
 README		... this file
 lab3a.cpp	... source file in Cpp
+ext2_fs.h	... filesystem header file
 
 Sources:

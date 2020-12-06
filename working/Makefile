@@ -6,9 +6,9 @@ CC=g++
 CFLAGS=-Wall -Wextra -g
 NAME=lab3a
 UID=805167986
-FILES=README Makefile lab3a.cpp
+FILES=README Makefile lab3a.cpp ext2_fs.h
 
-default: $(NAME).cpp
+default: $(NAME).cpp ext2_fs.h
 	$(CC) $(CFLAGS) -o $(NAME) $(NAME).cpp
 
 clean:
