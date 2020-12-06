@@ -23,13 +23,13 @@ check: default trivial.img trivial.csv
 	./lab3a temp.img | sort > out.csv
 
 	# get the sorted output to compare to
-	cat trivial.csv | sort > sorted.csv
+	cat trivial.csv | sort > trivial_sorted.csv
 
 	# get diff between both sorted outputs
-	diff -u out.csv sorted.csv > out.diff
+	diff -u out.csv trivial_sorted.csv > out.diff
 
 	# delete image copy
-	rm -rf temp.img sorted.csv
+	rm -rf temp.img
 
 dist:
 	tar -czf $(NAME)-$(UID).tar.gz $(FILES)
