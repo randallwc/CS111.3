@@ -2,8 +2,8 @@
 # EMAIL: wrandall1000@gmail.com,dylankgunn@gmail.com
 # ID: 805167986,805112866
 
-CC=gcc
-CFLAGS=-Wall -Wextra
+CC=g++
+CFLAGS=-Wall -Wextra -g
 NAME=lab3a
 UID=805167986
 FILES=README Makefile lab3a.cpp
