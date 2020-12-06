@@ -63,7 +63,7 @@ int main(int argc, char** argv)
     }
 
     // get blocksize from the superblock
-    blocksize = EXT2_MIN_BLOCK_SIZE << superblock.s_log_block_size;
+    blocksize = EXT2_MIN_BLOCK_SIZE << superblock.s_log_block_size; // superblock is constant 1024
     
     // superblock summary
     cout << "SUPERBLOCK," 
@@ -252,21 +252,26 @@ void iNodeSummary(int table, int numiNode)
 
     //TODO
     /* fix i_mode line */
-    cout << "INODE,";
-    cout << numiNode << ',';             /* inode number (decimal) */
-    cout << type << ',';                 /* file type ('f' for file, 'd' for directory, 's' for symbolic link, '?" for anything else) */
-    cout << iNode.i_mode & 0xFFF << ','; /* mode (low order 12-bits, octal ... suggested format "%o") */
-    cout << iNode.i_uid << ',';          /* owner (decimal) */
-    cout << iNode.i_gid << ',';          /* group (decimal) */
-    cout << iNode.i_links_count << ',';  /* link count (decimal) */
-    cout << ctime << ',';                /* time of last I-node change (mm/dd/yy hh:mm:ss, GMT) */
-    cout << mtime << ',';                /* modification time (mm/dd/yy hh:mm:ss, GMT) */
-    cout << atime << ',';                /* time of last access (mm/dd/yy hh:mm:ss, GMT) */
-    cout << iNode.i_size << ',';         /* file size (decimal) */
-    cout << numBlocks;                   /* number of (512 byte) blocks of disk space (decimal) taken up by this file */
+    cout << "INODE,"
+         << numiNode << ','            /* inode number (decimal) */
+         << type << ',';               /* file type ('f' for file, 'd' for directory, 's' for symbolic link, '?" for anything else) */
 
-    // if the file is a symbolic link or the file size is greater than 60
-    // print pointers to blocks
+    /* mode (low order 12-bits, octal ... suggested format "%o") */
+    cout << oct << (iNode.i_mode & 0xFFFU);
+         
+    cout << ','
+         << iNode.i_uid << ','         /* owner (decimal) */
+         << iNode.i_gid << ','         /* group (decimal) */
+         << iNode.i_links_count << ',' /* link count (decimal) */
+         << ctime << ','               /* time of last I-node change (mm/dd/yy hh:mm:ss, GMT) */
+         << mtime << ','               /* modification time (mm/dd/yy hh:mm:ss, GMT) */
+         << atime << ','               /* time of last access (mm/dd/yy hh:mm:ss, GMT) */
+         << iNode.i_size << ','        /* file size (decimal) */
+         << numBlocks;                 /* number of (512 byte) blocks of disk space (decimal) taken up by this file */
+
+    // if the file is a symbolic link
+    // print symbolic links
+    // file will contain zero data blocks if the file size is greater than 60
     if (type != 's' || iNode.i_size > 60)
         for (int i = 0; i < 15; i++)
             cout << iNode.i_block[i] << ',';
@@ -274,24 +279,24 @@ void iNodeSummary(int table, int numiNode)
 
     // if the file is a directory go into directory entries
     if (type == 'd')
-        for (int i = 0; i < 12; i++)
+        for (int i = 0; i < EXT2_NDIR_BLOCKS; i++)
             if (iNode.i_block[i] != 0) // recursive
                 directoryEntries(numiNode, iNode.i_block[i]); // input parent inode and offset
 
     int block_offset = 12;
     int depth = 1;
-    if (iNode.i_block[12] != 0)
-        indirectBlockReferences(numiNode, iNode.i_block[12], block_offset, depth, type);
+    if (iNode.i_block[EXT2_IND_BLOCK] != 0)
+        indirectBlockReferences(numiNode, iNode.i_block[EXT2_IND_BLOCK], block_offset, depth, type);
 
     block_offset += 256;
     depth++;// 2
-    if (iNode.i_block[13] != 0)
-        indirectBlockReferences(numiNode, iNode.i_block[13], block_offset, depth, type);
+    if (iNode.i_block[EXT2_DIND_BLOCK] != 0)
+        indirectBlockReferences(numiNode, iNode.i_block[EXT2_DIND_BLOCK], block_offset, depth, type);
 
     block_offset += 65536;
     depth++;// 3
-    if (iNode.i_block[14] != 0)
-        indirectBlockReferences(numiNode, iNode.i_block[14], block_offset, depth, type);
+    if (iNode.i_block[EXT2_TIND_BLOCK] != 0)
+        indirectBlockReferences(numiNode, iNode.i_block[EXT2_TIND_BLOCK], block_offset, depth, type);
 
     return;
 }
