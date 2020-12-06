@@ -312,7 +312,7 @@ void directoryEntries(int numParentiNode, int off)
         memset(dirEntry.name, 0, 256);
 
         /* read from img into the dirEntry struct */
-        pread(img, &dirEntry, sizeof(struct ext2_dir_entry), off + byte_offset);
+        pread(img, &dirEntry, sizeof(dirEntry), off + byte_offset);
 
         // if the inode number is not 0 then print
         if (dirEntry.inode != 0)
@@ -323,7 +323,7 @@ void directoryEntries(int numParentiNode, int off)
                  << byte_offset << ','       /* logical byte offset (decimal) of this entry within the directory */
                  << dirEntry.inode << ','    /* inode number of the referenced file (decimal) */
                  << dirEntry.rec_len << ','  /* entry length (decimal) */
-                 << dirEntry.name_len << ',' /* name length (decimal) */
+                 << (unsigned short) dirEntry.name_len << ',' /* name length (decimal) */
                  << '\'' << dirEntry.name << '\'' << endl;   /* name (string, surrounded by single-quotes). Don't worry about escaping, we promise there will be no single-quotes or commas in any of the file names. */
         }
         byte_offset += dirEntry.rec_len;
