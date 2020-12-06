@@ -182,3 +182,16 @@ MOUNT IMG ON MAC
 ============================================================
 assume that there will only be a single group in the filesystem
 used for grading
+============================================================
+15:21:43 williamrandall file_sys_test % hdiutil attach -readonly -nomount ./EXT2_test.img
+=> /dev/disk2
+hdiutil detach /dev/disk2
+
+mkdir fs
+sudo mount -o ro,loop EXT2_test.img fs
+sudo umount fs
+
+ext4fuse EXT2_test.img fs
+sudo umount fs
+===
+./lab3a trivial.img 
