@@ -10,3 +10,7 @@ lab3a.cpp	... source file in Cpp
 ext2_fs.h	... filesystem header file
 
 Sources:
+https://www.kernel.org/doc/html/latest/filesystems/debugfs.html
+https://en.wikipedia.org/wiki/Ext2
+https://www.kernel.org/doc/html/latest/filesystems/ext2.html
+https://www.nongnu.org/ext2-doc/ext2.html
