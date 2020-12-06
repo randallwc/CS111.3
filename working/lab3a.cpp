@@ -145,7 +145,11 @@ void freeBlockBitmap(int index, int offset, __u32 numBlocks)
     char* blockBitmap = (char *)malloc(blocksize); // TODO -- use new
 
     // TODO -- error check
-    pread(img, blockBitmap, blocksize, offset);
+    if (pread(img, blockBitmap, blocksize, offset) != blocksize)
+    {
+        fprintf(stderr, "Error: Encountered an issue on pread() for block bitmap\n");
+        exit(1);
+    }
     
     int blockNum = superblock.s_first_data_block + index * superblock.s_blocks_per_group;
     int mask = 1;
@@ -178,7 +182,11 @@ void freeiNodeBitmap(int index, int offset, int table, __u32 numBytes)
 
     // TODO -- error check
     // read into the iNode bitmap
-    pread(img, iNodeBitmap, blocksize, offset);
+    if (pread(img, iNodeBitmap, blocksize, offset) != blocksize)
+    {
+        fprintf(stderr, "Error: Encountered an issue on pread() for inode bitmap\n");
+        exit(1);
+    }
 
     //  get number of inodes
     __u32 iNodeNum = superblock.s_inodes_per_group * index;
@@ -316,7 +324,11 @@ void directoryEntries(int numParentiNode, int offset)
 
         //TODO -- error check pread
         /* read from img into the dirEntry struct */
-        pread(img, &dirEntry, sizeof(dirEntry), offset + byte_offset);
+        if (pread(img, &dirEntry, sizeof(dirEntry), offset + byte_offset) != sizeof(dirEntry))
+        {
+            fprintf(stderr, "Error: Encountered an issue on pread() for directory entries\n");
+            exit(1);
+        }
 
         // if the inode number is not 0 then print
         if (dirEntry.inode != 0)
@@ -344,7 +356,11 @@ void indirectBlockReferences(int numiNode, int blockNumber, int offset, int dept
 
     // TODO -- error check pread
     // read into the array
-    pread(img, blockNumber_arr, blocksize, blockNumber * blocksize);
+    if (pread(img, blockNumber_arr, blocksize, blockNumber * blocksize) != blocksize)
+    {
+        fprintf(stderr, "Error: Encountered an issue on pread() for indirect block references");
+        exit(1);
+    }
 
     for(__u32 i = 0; i < length; i++){
         // when 
