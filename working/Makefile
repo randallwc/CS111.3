@@ -15,5 +15,12 @@ clean:
 	rm -f $(NAME)
 	rm -f $(NAME)-$(UID).tar.gz
 
+check: default trivial.img trivial.csv
+	cp trivial.img temp.img
+	./lab3a temp.img | sort > out.csv
+	cat trivial.csv | sort > sorted.csv
+	diff -u out.csv sorted.csv > out.diff
+	rm -rf temp.img sorted.csv
+
 dist:
 	tar -czf $(NAME)-$(UID).tar.gz $(FILES)
