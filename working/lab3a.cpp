@@ -176,20 +176,31 @@ void freeBlockBitmap(int index, int off, __u32 numBlocks)
 
 void freeiNodeBitmap(int index, int off, int table, __u32 numBytes)
 {
-    off = 1024 + blocksize * (off - 1);
-    char* iNodeBitmap = (char*)malloc(blocksize);
+    // get offset
+    unsigned long off_tmp = 1024 + blocksize * (off - 1);
 
-    pread(img, iNodeBitmap, blocksize, off);
+    // malloc iNode bitmap
+    unsigned char* iNodeBitmap = (unsigned char*)malloc(blocksize);
 
-    int iNodeNum = superblock.s_inodes_per_group * index + 1;
+    // read into the iNode bitmap
+    pread(img, iNodeBitmap, blocksize, off_tmp);
+
+    //  get number of inodes
+    unsigned int iNodeNum = superblock.s_inodes_per_group * index + 1;
+
+    // set up bitmask
     int mask = 1;
-    int bit;
-    for (__u32 i = 0; i < numBytes; i++)
+    unsigned char bit;
+
+    // loop until the number of bytes
+    for (__u32 i = 0; i < (unsigned int)numBytes; i++)
     {
         bit = iNodeBitmap[i];
+
+        // loop through the bitmask
         for (int j = 0; j < 8; j++)
         {
-            if (!(bit & mask))
+            if (!(int)(bit & mask))
                 cout << "IFREE," << iNodeNum << endl; // number of the free I-node (decimal)
             else
                iNodeSummary(table, iNodeNum);
