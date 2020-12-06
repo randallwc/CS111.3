@@ -28,8 +28,8 @@ check: default trivial.img trivial.csv
 	# get diff between both sorted outputs
 	diff -u out.csv trivial_sorted.csv > out.diff
 
-	# delete image copy
-	rm -rf temp.img
+	# delete image copy and sorted trivial.csv
+	rm -f temp.img trivial_sorted.csv
 
 dist:
 	tar -czf $(NAME)-$(UID).tar.gz $(FILES)
