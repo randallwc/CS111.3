@@ -64,6 +64,51 @@ def scan_inodes():
     pass
 
 def main():
+    # Check args
+    if len(sys.argv) != 2:
+        sys.stderr.write("Error: Program expects exactly one argument.\n")
+        exit(1)
 
+    # Load CSV
+    try:
+        csv_f = open(argv[1], 'r')
+    except:
+        sys.stderr.write("Error: Unable to open specified file.\n")
+        exit(2)
 
+    superblock, group = None, None
+    bfree = []
+    ifree = []
+    inodes = []
+    dirents = []
+    indirects = []
 
+    reader = csv.reader(csv_f, delimiter=',')
+    for row in reader:
+        elem = row[0]
+        if elem == "SUPERBLOCK":
+            superblock = Superblock(row)
+        elif elem == "GROUP":
+            group = Group(row)
+        elif elem == "BFREE":
+            bfree.append(int(row[1]))
+        elif elem == "IFREE":
+            ifree.append(int(row[1]))
+        elif elem == "INODE":
+            inodes.append(Inode(row))
+        elif elem == "DIRENT":
+            dirents.append(Dirent(row))
+        elif elem == "INDIRECT":
+            indirects.append(Indirect(row))
+        else:
+            sys.stderr.write("Error: Inconcistency in CSV\n")
+            sys.exit(1)
+
+    #if not superblock or not group, error?
+    
+    scan_blocks()
+    scan_inodes(inodes, superblock.first_inode, superblock.num_inodes)
+            
+
+if __name__ == "__main__":
+    main()
