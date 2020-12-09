@@ -9,8 +9,9 @@ import csv
 bfree = []
 ifree = []
 
-class Superblock: #do dictionary entries for each of these?
-    def __init__(self,row):
+
+class Superblock:  # do dictionary entries for each of these?
+    def __init__(self, row):
         self.num_blocks = int(row[1])
         self.num_inodes = int(row[2])
         self.block_size = int(row[3])
@@ -19,11 +20,13 @@ class Superblock: #do dictionary entries for each of these?
         self.inode_per_group = int(row[6])
         self.first_inode = int(row[7])
 
+
 class Group:
     def __init__(self, row):
         self.num = int(row[1])
         self.inode_per_group = int(row[3])
         self.inode_tb = int(row[8])
+
 
 class Inode:
     def __init__(self, row):
@@ -43,6 +46,7 @@ class Inode:
         self.indirect_refs = []
         self.indirect_refs.extend(row[24:27])
 
+
 class Dirent:
     def __init__(self, row):
         self.parent_inode = int(row[1])
@@ -52,6 +56,7 @@ class Dirent:
         self.name_len = int(row[5])
         self.name = row[6]
 
+
 class Indirect:
     def __init__(self, row):
         self.inode_num = int(row[1])
@@ -60,51 +65,69 @@ class Indirect:
         self.indir_block_num = int(row[4])
         self.ref_block_num = int(row[5])
 
+
 def scan_blocks():
     pass
 
+
 def scan_inodes(inodes, dirents, first, cap):
-    allocated = [] #name?
-    for inode in inodes:
-        num = inode.num
-        if num != 0:
-            allocated.append(num)
-            if num in ifree:
-                print(f"ALLOCATED INODE {num} ON FREELIST")
-        if inode.file_type == '0' and num not in ifree:
-            print(f"UNALLOCATED INODE {num} NOT ON FREELILST")
-    
-    link_count = {} #name?
+    allocated = []  # name?
+    link_count = {}
     parent_dir = {}
-    for num in range(first, cap) #cap + 1?
-        if num in allocated and num in ifree:
-            print(f"ALLOCATED INODE {num} ON FREELIST")
-        if num not in allocated and num not in ifree:
-            print(f"UNALLOCATED INODE {num} NOT ON FREELIST")
-    for entry in dirents:
-        if entry.name != "'.'" and entry.name != "'..'":
-            parent_dir[entry.inode] = entry.parent_inode
-        if entry.inode > cap or entry.inode <= 0:
-            print(f"DIRECTORY INODE {entry.parent_inode} NAME {entry.name} INVALID NODE {entry.inode}")
-        elif entry.inode not in allocated:
-            print(f"DIRECTORY INODE {entry.parent_inode} NAME {entry.name} UNALLOCATED INODE {entry.inode}")
-        else:
-            inode = entry.inode
-            if inode not in link_count:
-                link_count[inode] = 1
+
+    def check_freelist(inodes, alloc)
+       for inode in inodes:
+            num = inode.num
+            if num != 0:
+                alloc.append(num)
+                if num in ifree:
+                    print(f"ALLOCATED INODE {num} ON FREELIST")
+            if inode.file_type == '0' and num not in ifree:
+                print(f"UNALLOCATED INODE {num} NOT ON FREELILST")
+        for num in range(first, cap)  # cap + 1?
+           if num in alloc and num in ifree:
+                print(f"ALLOCATED INODE {num} ON FREELIST")
+            if num not in alloc and num not in ifree:
+                print(f"UNALLOCATED INODE {num} NOT ON FREELIST")
+
+    def check_directories(dirents, alloc)
+       for entry in dirents:
+            if entry.name != "'.'" and entry.name != "'..'":
+                parent_dir[entry.inode] = entry.parent_inode
+            if entry.inode > cap or entry.inode <= 0:
+                print(
+                    f"DIRECTORY INODE {entry.parent_inode} NAME {entry.name} INVALID NODE {entry.inode}")
+            elif entry.inode not in alloc:
+                print(
+                    f"DIRECTORY INODE {entry.parent_inode} NAME {entry.name} UNALLOCATED INODE {entry.inode}")
             else:
-                link_count[inode] += 1
+                inode = entry.inode
+                if inode not in link_count:
+                    link_count[inode] = 1
+                else:
+                    link_count[inode] += 1
 
-    for inode in inodes:
-        num = inode.num
-        if link_count[num] != inode.link_count:
-            print(f"INODE {num} HAS {link_count[num]} LINKS BUT LINKCOUNT IS {inode.link_count}")
+    def check_links(inodes, counts)
+       for inode in inodes:
+            num = inode.num
+            if counts[num] != inode.link_count:
+                print(
+                    f"INODE {num} HAS {counts[num]} LINKS BUT LINKCOUNT IS {inode.link_count}")
 
-    for entry in dirents:
-        if entry.name == "'.'" and entry.inode != entry.parent_inode:
-            print(f"DIRECTORY INODE {entry.parent_inode} NAME '.' LINK TO INODE {entry.inode} SHOULD BE {entry.parent_inode}")
-        if entry.name == "'..'" and parent_dir[entry.parent_inode] != entry.inode:
-            print(f"DIRECTORY INODE {entry.parent_inode} NAME '..' LINK TO INODE {entry.inode} SHOULD BE {entry.parent_inode}")
+    def check_curr_parent_dir(dirents)
+       for entry in dirents:
+            if entry.name == "'.'" and entry.inode != entry.parent_inode:
+                print(
+                    f"DIRECTORY INODE {entry.parent_inode} NAME '.' LINK TO INODE {entry.inode} SHOULD BE {entry.parent_inode}")
+            if entry.name == "'..'" and parent_dir[entry.parent_inode] != entry.inode:
+                print(
+                    f"DIRECTORY INODE {entry.parent_inode} NAME '..' LINK TO INODE {entry.inode} SHOULD BE {entry.parent_inode}")
+
+    check_freelist(inodes, allocated)
+    check_directories(dirents, allocated)
+    check_links(inodes, link_count)
+    check_curr_parent_dir(dirents)
+
 
 def main():
     # Check args
@@ -145,11 +168,11 @@ def main():
             sys.stderr.write("Error: Inconcistency in CSV")
             sys.exit(1)
 
-    #if not superblock or not group, error?
-    
+    # if not superblock or not group, error?
+
     scan_blocks()
     scan_inodes(inodes, dirents, superblock.first_inode, superblock.num_inodes)
-            
+
 
 if __name__ == "__main__":
     main()
