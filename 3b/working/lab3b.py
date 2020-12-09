@@ -73,7 +73,9 @@ def scan_inodes(inodes, dirents, first, cap):
                 print(f"ALLOCATED INODE {num} ON FREELIST")
         if inode.file_type == '0' and num not in ifree:
             print(f"UNALLOCATED INODE {num} NOT ON FREELILST")
-
+    
+    link_count = {} #name?
+    parent_dir = {}
     for num in range(first, cap) #cap + 1?
         if num in allocated and num in ifree:
             print(f"ALLOCATED INODE {num} ON FREELIST")
@@ -86,18 +88,35 @@ def scan_inodes(inodes, dirents, first, cap):
             print(f"DIRECTORY INODE {entry.parent_inode} NAME {entry.name} INVALID NODE {entry.inode}")
         elif entry.inode not in allocated:
             print(f"DIRECTORY INODE {entry.parent_inode} NAME {entry.name} UNALLOCATED INODE {entry.inode}")
+        else:
+            inode = entry.inode
+            if inode not in link_count:
+                link_count[inode] = 1
+            else:
+                link_count[inode] += 1
+
+        for inode in inodes:
+            num = inode.num
+            if link_count[num] != inode.link_count:
+                print(f"INODE {num} HAS {link_count[num]} LINKS BUT LINKCOUNT IS {inode.link_count}")
+
+        for entry in dirents:
+            if entry.name == "'.'" and entry.inode != entry.parent_inode:
+                print(f"DIRECTORY INODE {entry.parent_inode} NAME '.' LINK TO INODE {entry.inode} SHOULD BE {entry.parent_inode}")
+            if entry.name == "'..'" and parent_dir[entry.parent_inode] != entry.inode:
+                print(f"DIRECTORY INODE {entry.parent_inode} NAME '..' LINK TO INODE {entry.inode} SHOULD BE {entry.parent_inode}")
 
 def main():
     # Check args
     if len(sys.argv) != 2:
-        sys.stderr.write("Error: Program expects exactly one argument.\n")
+        sys.stderr.write("Error: Program expects exactly one argument.")
         exit(1)
 
     # Load CSV
     try:
         csv_f = open(argv[1], 'r')
     except:
-        sys.stderr.write("Error: Unable to open specified file.\n")
+        sys.stderr.write("Error: Unable to open specified file.")
         exit(2)
 
     superblock, group = None, None
@@ -123,7 +142,7 @@ def main():
         elif elem == "INDIRECT":
             indirects.append(Indirect(row))
         else:
-            sys.stderr.write("Error: Inconcistency in CSV\n")
+            sys.stderr.write("Error: Inconcistency in CSV")
             sys.exit(1)
 
     #if not superblock or not group, error?
