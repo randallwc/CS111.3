@@ -6,6 +6,9 @@ import math
 import sys
 import csv
 
+bfree = []
+ifree = []
+
 class Superblock: #do dictionary entries for each of these?
     def __init__(self,row):
         self.num_blocks = int(row[1])
@@ -60,8 +63,29 @@ class Indirect:
 def scan_blocks():
     pass
 
-def scan_inodes():
-    pass
+def scan_inodes(inodes, dirents, first, cap):
+    allocated = [] #name?
+    for inode in inodes:
+        num = inode.num
+        if num != 0:
+            allocated.append(num)
+            if num in ifree:
+                print(f"ALLOCATED INODE {num} ON FREELIST")
+        if inode.file_type == '0' and num not in ifree:
+            print(f"UNALLOCATED INODE {num} NOT ON FREELILST")
+
+    for num in range(first, cap) #cap + 1?
+        if num in allocated and num in ifree:
+            print(f"ALLOCATED INODE {num} ON FREELIST")
+        if num not in allocated and num not in ifree:
+            print(f"UNALLOCATED INODE {num} NOT ON FREELIST")
+    for entry in dirents:
+        if entry.name != "'.'" and entry.name != "'..'":
+            parent_dir[entry.inode] = entry.parent_inode
+        if entry.inode > cap or entry.inode <= 0:
+            print(f"DIRECTORY INODE {entry.parent_inode} NAME {entry.name} INVALID NODE {entry.inode}")
+        elif entry.inode not in allocated:
+            print(f"DIRECTORY INODE {entry.parent_inode} NAME {entry.name} UNALLOCATED INODE {entry.inode}")
 
 def main():
     # Check args
@@ -77,8 +101,6 @@ def main():
         exit(2)
 
     superblock, group = None, None
-    bfree = []
-    ifree = []
     inodes = []
     dirents = []
     indirects = []
@@ -107,7 +129,7 @@ def main():
     #if not superblock or not group, error?
     
     scan_blocks()
-    scan_inodes(inodes, superblock.first_inode, superblock.num_inodes)
+    scan_inodes(inodes, dirents, superblock.first_inode, superblock.num_inodes)
             
 
 if __name__ == "__main__":
