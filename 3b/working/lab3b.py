@@ -4,7 +4,6 @@
 
 import math
 import sys
-import argparse
 import csv
 
 class Superblock: #do dictionary entries for each of these?
@@ -58,6 +57,13 @@ class Indirect:
         self.indir_block_num = int(row[4])
         self.ref_block_num = int(row[5])
 
+def scan_blocks():
+    pass
+
+def scan_inodes():
+    pass
+
+def main():
 
 
 
