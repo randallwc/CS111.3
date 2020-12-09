@@ -1,1 +1,11 @@
-temp
+NAME: Dylan Gunn,William Randall
+EMAIL: dylankgunn@gmail.com,wrandall1000@gmail.com
+ID: 805112866,805167986
+
+Files:
+
+Makefile	...	makefile with 4 arguments default, dist, and clean
+README		...	this file
+lab3b.py	...	source file in python3
+
+Sources:
