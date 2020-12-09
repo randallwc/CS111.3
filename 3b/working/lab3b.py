@@ -95,16 +95,16 @@ def scan_inodes(inodes, dirents, first, cap):
             else:
                 link_count[inode] += 1
 
-        for inode in inodes:
-            num = inode.num
-            if link_count[num] != inode.link_count:
-                print(f"INODE {num} HAS {link_count[num]} LINKS BUT LINKCOUNT IS {inode.link_count}")
+    for inode in inodes:
+        num = inode.num
+        if link_count[num] != inode.link_count:
+            print(f"INODE {num} HAS {link_count[num]} LINKS BUT LINKCOUNT IS {inode.link_count}")
 
-        for entry in dirents:
-            if entry.name == "'.'" and entry.inode != entry.parent_inode:
-                print(f"DIRECTORY INODE {entry.parent_inode} NAME '.' LINK TO INODE {entry.inode} SHOULD BE {entry.parent_inode}")
-            if entry.name == "'..'" and parent_dir[entry.parent_inode] != entry.inode:
-                print(f"DIRECTORY INODE {entry.parent_inode} NAME '..' LINK TO INODE {entry.inode} SHOULD BE {entry.parent_inode}")
+    for entry in dirents:
+        if entry.name == "'.'" and entry.inode != entry.parent_inode:
+            print(f"DIRECTORY INODE {entry.parent_inode} NAME '.' LINK TO INODE {entry.inode} SHOULD BE {entry.parent_inode}")
+        if entry.name == "'..'" and parent_dir[entry.parent_inode] != entry.inode:
+            print(f"DIRECTORY INODE {entry.parent_inode} NAME '..' LINK TO INODE {entry.inode} SHOULD BE {entry.parent_inode}")
 
 def main():
     # Check args
