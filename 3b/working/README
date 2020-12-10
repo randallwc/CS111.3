@@ -9,3 +9,7 @@ README		...	this file
 lab3b.py	...	source file in python3
 
 Sources:
+https://docs.python.org/3/library/exceptions.html#OSError
+https://docs.python.org/3/library/exceptions.html
+https://python101.pythonlibrary.org/chapter7_exception_handling.html#:~:text=In%20Python%2C%20this%20is%20known,a%20division%20by%20zero%20error.
+https://docs.python.org/3/library/csv.html

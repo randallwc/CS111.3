@@ -2,9 +2,10 @@
 # EMAIL: dylankgunn@gmail.com,wrandall1000@gmail.com
 # ID: 805112866,805167986
 
-import math
-import sys
 import csv
+import sys
+
+# import math
 
 bfree = []
 ifree = []
@@ -71,27 +72,27 @@ def scan_blocks():
 
 
 def scan_inodes(inodes, dirents, first, cap):
-    allocated = []  # name?
+    allocated = []  # TODO -- name?
     link_count = {}
     parent_dir = {}
 
-    def check_freelist(inodes, alloc)
-       for inode in inodes:
+    def check_freelist(inodes_t, alloc):
+        for inode in inodes_t:
             num = inode.num
             if num != 0:
                 alloc.append(num)
                 if num in ifree:
                     print(f"ALLOCATED INODE {num} ON FREELIST")
             if inode.file_type == '0' and num not in ifree:
-                print(f"UNALLOCATED INODE {num} NOT ON FREELILST")
-        for num in range(first, cap)  # cap + 1?
-           if num in alloc and num in ifree:
+                print(f"UNALLOCATED INODE {num} NOT ON FREELIST")
+        for num in range(first, cap):  # TODO -- cap + 1?
+            if num in alloc and num in ifree:
                 print(f"ALLOCATED INODE {num} ON FREELIST")
             if num not in alloc and num not in ifree:
                 print(f"UNALLOCATED INODE {num} NOT ON FREELIST")
 
-    def check_directories(dirents, alloc)
-       for entry in dirents:
+    def check_directories(dirents_t, alloc):
+        for entry in dirents_t:
             if entry.name != "'.'" and entry.name != "'..'":
                 parent_dir[entry.inode] = entry.parent_inode
             if entry.inode > cap or entry.inode <= 0:
@@ -107,21 +108,21 @@ def scan_inodes(inodes, dirents, first, cap):
                 else:
                     link_count[inode] += 1
 
-    def check_links(inodes, counts)
-       for inode in inodes:
+    def check_links(inodes_t, counts):
+        for inode in inodes_t:
             num = inode.num
             if counts[num] != inode.link_count:
                 print(
                     f"INODE {num} HAS {counts[num]} LINKS BUT LINKCOUNT IS {inode.link_count}")
 
-    def check_curr_parent_dir(dirents)
-       for entry in dirents:
+    def check_curr_parent_dir(dirents_t):
+        for entry in dirents_t:
             if entry.name == "'.'" and entry.inode != entry.parent_inode:
-                print(
-                    f"DIRECTORY INODE {entry.parent_inode} NAME '.' LINK TO INODE {entry.inode} SHOULD BE {entry.parent_inode}")
+                print(f"DIRECTORY INODE {entry.parent_inode} \
+                NAME '.' LINK TO INODE {entry.inode} SHOULD BE {entry.parent_inode}")
             if entry.name == "'..'" and parent_dir[entry.parent_inode] != entry.inode:
-                print(
-                    f"DIRECTORY INODE {entry.parent_inode} NAME '..' LINK TO INODE {entry.inode} SHOULD BE {entry.parent_inode}")
+                print(f"DIRECTORY INODE {entry.parent_inode} \
+                NAME '..' LINK TO INODE {entry.inode} SHOULD BE {entry.parent_inode}")
 
     check_freelist(inodes, allocated)
     check_directories(dirents, allocated)
@@ -130,15 +131,18 @@ def scan_inodes(inodes, dirents, first, cap):
 
 
 def main():
-    # Check args
-    if len(sys.argv) != 2:
+    # Get args
+    argv = sys.argv
+
+    # Check if more than 1 arg
+    if len(argv) != 2:
         sys.stderr.write("Error: Program expects exactly one argument.")
         exit(1)
 
     # Load CSV
     try:
         csv_f = open(argv[1], 'r')
-    except:
+    except OSError:
         sys.stderr.write("Error: Unable to open specified file.")
         exit(2)
 
@@ -168,7 +172,7 @@ def main():
             sys.stderr.write("Error: Inconcistency in CSV")
             sys.exit(1)
 
-    # if not superblock or not group, error?
+    # TODO -- if not superblock or not group, error?
 
     scan_blocks()
     scan_inodes(inodes, dirents, superblock.first_inode, superblock.num_inodes)
