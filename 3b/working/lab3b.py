@@ -48,9 +48,9 @@ class Inode:
         self.file_size = int(row[10])
         self.num_blocks = int(row[11])
         self.directories = []
-        self.directories.extend(row[12:24])
+        self.directories.extend([int(val) for val in row[12:24]])
         self.indirect_refs = []
-        self.indirect_refs.extend(row[24:27])
+        self.indirect_refs.extend([int(val) for val in row[24:27]])
 
 
 class Dirent:
@@ -181,7 +181,7 @@ def check_blocks(inodes, indirects, initial_block, num_blocks):
     # look at each inode
     for inode in inodes:
         # skip soft links and links of size less than or equal to 60
-        if inode.file_type is 's' and inode.file_size <= 60:
+        if inode.file_type == 's' and inode.file_size <= 60:
             continue
         # look at each direct block
         offset = 0
