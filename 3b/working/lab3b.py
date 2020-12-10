@@ -163,7 +163,7 @@ def check_blocks(inodes, indirects, initial_block, num_blocks):
                 assert isinstance(block_list, list)
                 num, off, level = block_list
                 depth_string = depths[level]
-                print(f"DUPLICATE{depth_string} BLOCK {block_t} IN INODE {num} AT OFFSET {off}")
+                print(f"DUPLICATE{depths.get(block_list[2])} BLOCK {block_t} IN INODE {num} AT OFFSET {off}")
                 error_flag = True
 
     def analyze_blocks():
@@ -232,7 +232,7 @@ def check_inodes(inodes, dirents, first, cap):
             if entry.name != "'.'" and entry.name != "'..'":
                 parent_dir[entry.inode] = entry.parent_inode
             if entry.inode > cap or entry.inode <= 0:
-                print(f"DIRECTORY INODE {entry.parent_inode} NAME {entry.name} INVALID NODE {entry.inode}")
+                print(f"DIRECTORY INODE {entry.parent_inode} NAME {entry.name} INVALID INODE {entry.inode}")
                 error_flag = True
             elif entry.inode not in alloc:
                 print(f"DIRECTORY INODE {entry.parent_inode} NAME {entry.name} UNALLOCATED INODE {entry.inode}")

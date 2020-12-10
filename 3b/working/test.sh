@@ -19,18 +19,19 @@ fi
 
 for i in {1..22}
 do
-	ERROR_FILE=test/P3B-test_$i.err
-	OUTPUT_FILE=test/$i.txt
-	DIFF_FILE=test/$i.diff
-	if ! diff -u $ERROR_FILE $OUTPUT_FILE > $DIFF_FILE
-	then
-		echo "test $i passed"
-	else
-		echo "test $i failed"
-		echo "===correct==="
-		cat $ERROR_FILE
-		echo "===incorrect==="
-		cat $OUTPUT_FILE
-		echo "===end==="
-	fi
+    ERROR_FILE=test/P3B-test_$i.err
+    OUTPUT_FILE=test/$i.txt
+    DIFF_FILE=test/$i.diff
+    diff -u $ERROR_FILE $OUTPUT_FILE > $DIFF_FILE
+    if [ -s $DIFF_FILE ]
+    then
+      echo "test $i FAILED"
+        echo "===correct==="
+        cat $ERROR_FILE
+        echo "===incorrect==="
+        cat $OUTPUT_FILE
+        echo "===end==="
+    else
+    echo "test $i passed"
+    fi
 done
