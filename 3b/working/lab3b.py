@@ -204,7 +204,7 @@ def check_blocks(inodes, indirects, initial_block, num_blocks):
 def check_inodes(inodes, dirents, first, cap):
     allocated = []  # TODO -- name?
     link_count = {}
-    parent_dir = {}
+    parent_dir = {2: 2}
 
     def check_freelist(inodes_t, alloc):
         global error_flag
