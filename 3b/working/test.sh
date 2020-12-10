@@ -9,9 +9,9 @@ for i in {1..22}
 do
 	ERROR_FILE=test/P3B-test_$i.err
 	OUTPUT_FILE=test/$i.txt
-	DIFF_FILE
+	DIFF_FILE=test/$i.diff
 	diff -u $ERROR_FILE $OUTPUT_FILE > $DIFF_FILE
-	if[ $? -eq 0 ]
+	if [ $? -eq 0 ]
 	then
 		echo "test $i passed"
 	else
