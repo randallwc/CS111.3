@@ -250,9 +250,9 @@ def check_inodes(inodes, dirents, first, cap):
             num = inode.num
             if num not in counts:
                 counts[num] = 0
-                if counts[num] != inode.link_count:
-                    print(f"INODE {num} HAS {counts[num]} LINKS BUT LINKCOUNT IS {inode.link_count}")
-                    error_flag = True
+            if counts[num] != inode.link_count:
+                print(f"INODE {num} HAS {counts[num]} LINKS BUT LINKCOUNT IS {inode.link_count}")
+                error_flag = True
 
     def check_curr_parent_dir(dirents_t):
         global error_flag
