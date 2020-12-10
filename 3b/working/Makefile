@@ -14,11 +14,14 @@ default: $(NAME).py $(NAME).sh
 clean:
 	rm -f $(NAME)
 	rm -f $(NAME)-$(UID).tar.gz
+	rm -f test/[0-9]*.diff test/[0-9]*.txt
+	rm -f trivial.txt trivial.diff
 
 dist: default
 	tar -czf $(NAME)-$(UID).tar.gz $(FILES)
 
 test: check
+
 check: default test.sh
 	chmod +x test.sh
 	./test.sh
