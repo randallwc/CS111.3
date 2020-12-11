@@ -225,6 +225,7 @@ def check_inodes(inodes, dirents, first, cap):
     check_links(inodes, link_count)
     check_curr_parent_dir(dirents)
 
+
 def main():
     # Get arg
     argv = sys.argv

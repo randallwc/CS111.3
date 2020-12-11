@@ -16,18 +16,12 @@ default: $(NAME).py $(NAME).sh
 clean:
 	rm -f $(NAME)
 	rm -f $(NAME)-$(UID).tar.gz
-	rm -f test/[0-9]*.diff test/[0-9]*.txt
-	rm -f trivial.txt trivial.diff
+#	rm -f test/[0-9]*.diff test/[0-9]*.txt
+#	rm -f trivial.txt trivial.diff
 
 dist: default
 	tar -czf $(NAME)-$(UID).tar.gz $(FILES)
 
-check: default check.sh
-	chmod +x check.sh
-	./check.sh
-
-final_check: dist check
-	cp $(NAME)-$(UID).tar.gz ../submit/
-	chmod +x ../submit/P3B_check.sh
-	../submit/P3B_check.sh $(UID)
-	rm ../**/functions.sh
+#check: default check.sh
+#	chmod +x check.sh
+#	./check.sh
