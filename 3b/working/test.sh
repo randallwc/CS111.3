@@ -45,17 +45,14 @@ do
 	ERROR_FILE=test/P3B-test_$i.err
 	OUTPUT_FILE=test/$i.txt
 	DIFF_FILE=test/$i.diff
-	diff -u $ERROR_FILE $OUTPUT_FILE > $DIFF_FILE
+	diff -u $OUTPUT_FILE $ERROR_FILE > $DIFF_FILE
 	if [ -s $DIFF_FILE ]
 	then
 		echo ""
 		echo "test $i FAILED"
-		echo "===correct==="
-		cat $ERROR_FILE
-		echo "===incorrect==="
-		cat $OUTPUT_FILE
-		echo "===end==="
-		echo ""
+		echo "///DIFF///"
+		cat $DIFF_FILE
+		echo "///END///"
 	else
     	echo "test $i passed"
 	fi
