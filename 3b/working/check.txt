@@ -26,7 +26,7 @@ test 8 passed
 
 test 9 FAILED
 ///DIFF///
---- test/9.txt	2020-12-11 00:29:48.706628468 +0000
+--- test/9.txt	2020-12-11 00:38:37.205150495 +0000
 +++ test/P3B-test_9.err	2020-12-10 22:14:41.186384596 +0000
 @@ -0,0 +1 @@
 +UNREFERENCED BLOCK 41
@@ -34,7 +34,7 @@ test 9 FAILED
 
 test 10 FAILED
 ///DIFF///
---- test/10.txt	2020-12-11 00:29:48.750632009 +0000
+--- test/10.txt	2020-12-11 00:38:37.253154358 +0000
 +++ test/P3B-test_10.err	2020-12-10 22:14:41.182384324 +0000
 @@ -0,0 +1 @@
 +ALLOCATED BLOCK 8 ON FREELIST
@@ -43,7 +43,7 @@ test 11 passed
 
 test 12 FAILED
 ///DIFF///
---- test/12.txt	2020-12-11 00:29:48.886642952 +0000
+--- test/12.txt	2020-12-11 00:38:37.409166910 +0000
 +++ test/P3B-test_12.err	2020-12-10 22:14:41.186384596 +0000
 @@ -1,2 +1,2 @@
  DUPLICATE BLOCK 8 IN INODE 2 AT OFFSET 0
@@ -53,7 +53,7 @@ test 12 FAILED
 
 test 13 FAILED
 ///DIFF///
---- test/13.txt	2020-12-11 00:29:48.926646171 +0000
+--- test/13.txt	2020-12-11 00:38:37.453170450 +0000
 +++ test/P3B-test_13.err	2020-12-10 22:14:41.186384596 +0000
 @@ -1,2 +1,2 @@
  DUPLICATE BLOCK 8 IN INODE 2 AT OFFSET 0
@@ -63,7 +63,7 @@ test 13 FAILED
 
 test 14 FAILED
 ///DIFF///
---- test/14.txt	2020-12-11 00:29:48.970649711 +0000
+--- test/14.txt	2020-12-11 00:38:37.513175279 +0000
 +++ test/P3B-test_14.err	2020-12-10 22:14:41.186384596 +0000
 @@ -1,2 +1,2 @@
  DUPLICATE BLOCK 8 IN INODE 2 AT OFFSET 0
@@ -75,7 +75,7 @@ test 16 passed
 
 test 17 FAILED
 ///DIFF///
---- test/17.txt	2020-12-11 00:29:49.098660010 +0000
+--- test/17.txt	2020-12-11 00:38:37.677188475 +0000
 +++ test/P3B-test_17.err	2020-12-10 22:14:41.186384596 +0000
 @@ -1,57 +1 @@
 -UNREFERENCED BLOCK 0
@@ -140,12 +140,4 @@ test 18 passed
 test 19 passed
 test 20 passed
 test 21 passed
-
-test 22 FAILED
-///DIFF///
---- test/22.txt	2020-12-11 00:29:49.322678034 +0000
-+++ test/P3B-test_22.err	2020-12-10 22:14:41.186384596 +0000
-@@ -1 +1 @@
--DIRECTORY INODE 2                 NAME '..' LINK TO INODE 11 SHOULD BE 2
-+DIRECTORY INODE 2 NAME '..' LINK TO INODE 11 SHOULD BE 2
-///END///
+test 22 passed
