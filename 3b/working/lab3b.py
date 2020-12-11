@@ -72,6 +72,7 @@ class Indirect:
         self.ref_block_num = int(row[5])
 
 
+# HELPER FUNCTION DEFINITIONS
 def check_blocks(inodes, indirects, initial_block, num_blocks):
     blocks_allocated_d = {}
     duplicate_blocks = set()
@@ -169,13 +170,14 @@ def check_blocks(inodes, indirects, initial_block, num_blocks):
     def analyze_blocks():
         global error_flag
         for block_t in range(initial_block, num_blocks):
-            if block in blocks_allocated_d:
-                if block in bfree:
-                    print(f"ALLOCATED BLOCK {block} ON FREELIST")
+            if block_t in blocks_allocated_d:
+                if block_t in bfree:
+                    print(f"ALLOCATED BLOCK {block_t} ON FREELIST")
                     error_flag = True
-            else:  # block not in blocks allocated dictionary
-                if block not in bfree:
-                    print(f"UNREFERENCED BLOCK {block}")
+            # block not in blocks allocated dictionary
+            else:
+                if block_t not in bfree:
+                    print(f"UNREFERENCED BLOCK {block_t}")
                     error_flag = True
 
     # look at each inode
@@ -200,7 +202,6 @@ def check_blocks(inodes, indirects, initial_block, num_blocks):
     analyze_blocks()
 
 
-# HELPER FUNCTION DEFINITIONS
 def check_inodes(inodes, dirents, first, cap):
     allocated = []  # TODO -- name?
     link_count = {}
@@ -269,8 +270,9 @@ def check_inodes(inodes, dirents, first, cap):
     check_links(inodes, link_count)
     check_curr_parent_dir(dirents)
 
-
+argv = str()
 def main():
+    global argv
     # Get arg
     argv = sys.argv
 
