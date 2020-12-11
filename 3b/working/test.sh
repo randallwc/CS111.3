@@ -1,21 +1,44 @@
 #!/bin/bash
+
+echo ""
+echo "/////BEGIN MAKING *.TXT FILES/////"
+echo ""
+
 for i in {1..22}
 do
 	INPUT_FILE=test/P3B-test_$i.csv
 	./lab3b $INPUT_FILE > test/$i.txt
+	EXIT_CODE=$?
+	ERROR_FILE=test/P3B-test_$i.err
+	if [ -s $ERROR_FILE ]
+	then
+		if [ $EXIT_CODE -ne 2 ]
+		then
+			echo "test $i failed ... incorrrect exit code $EXIT_CODE"
+		fi
+	fi
 done
 
-if ! ./lab3b test/trivial.csv > test/23.txt
+echo ""
+echo "/////BEGIN TRIVIAL TEST/////"
+echo ""
+
+if ./lab3b test/trivial.csv > test/0.txt
 then
   echo "trivial.csv passed"
+  cat test/0.txt
 else
   echo "trivial.csv failed"
   echo "===correct==="
   echo "NO OUTPUT"
   echo "===incorrect==="
-  cat test/23.txt
+  cat test/0.txt
   echo "===end==="
 fi
+
+echo ""
+echo "/////BEGIN DIFF TESTS/////"
+echo ""
 
 for i in {1..22}
 do
@@ -25,13 +48,15 @@ do
 	diff -u $ERROR_FILE $OUTPUT_FILE > $DIFF_FILE
 	if [ -s $DIFF_FILE ]
 	then
+		echo ""
 		echo "test $i FAILED"
-			echo "===correct==="
-			cat $ERROR_FILE
-			echo "===incorrect==="
-			cat $OUTPUT_FILE
-			echo "===end==="
+		echo "===correct==="
+		cat $ERROR_FILE
+		echo "===incorrect==="
+		cat $OUTPUT_FILE
+		echo "===end==="
+		echo ""
 	else
-		echo "test $i passed"
+    	echo "test $i passed"
 	fi
 done
