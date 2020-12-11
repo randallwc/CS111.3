@@ -6,6 +6,8 @@ NAME=lab3b
 UID=805167986
 FILES=README Makefile lab3b.py lab3b.sh
 
+.SILENT: default dist test check
+
 default: $(NAME).py $(NAME).sh
 	rm -f $(NAME)
 	ln -s $(NAME).sh $(NAME)

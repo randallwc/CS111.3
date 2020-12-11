@@ -1,8 +1,3 @@
-rm -f lab3b
-ln -s lab3b.sh lab3b
-chmod +x lab3b
-chmod +x test.sh
-./test.sh
 
 /////BEGIN MAKING *.TXT FILES/////
 
@@ -24,36 +19,9 @@ test 8 passed
 test 9 passed
 test 10 passed
 test 11 passed
-
-test 12 FAILED
-///DIFF///
---- test/12.txt	2020-12-11 01:59:34.069834078 +0000
-+++ test/P3B-test_12.err	2020-12-10 22:14:41.186384596 +0000
-@@ -1,2 +1,2 @@
- DUPLICATE BLOCK 8 IN INODE 2 AT OFFSET 0
--DUPLICATE BLOCK 8 IN INODE 13 AT OFFSET 12
-+DUPLICATE INDIRECT BLOCK 8 IN INODE 13 AT OFFSET 12
-///END///
-
-test 13 FAILED
-///DIFF///
---- test/13.txt	2020-12-11 01:59:34.129839673 +0000
-+++ test/P3B-test_13.err	2020-12-10 22:14:41.186384596 +0000
-@@ -1,2 +1,2 @@
- DUPLICATE BLOCK 8 IN INODE 2 AT OFFSET 0
--DUPLICATE BLOCK 8 IN INODE 13 AT OFFSET 268
-+DUPLICATE DOUBLE INDIRECT BLOCK 8 IN INODE 13 AT OFFSET 268
-///END///
-
-test 14 FAILED
-///DIFF///
---- test/14.txt	2020-12-11 01:59:34.189845269 +0000
-+++ test/P3B-test_14.err	2020-12-10 22:14:41.186384596 +0000
-@@ -1,2 +1,2 @@
- DUPLICATE BLOCK 8 IN INODE 2 AT OFFSET 0
--DUPLICATE BLOCK 8 IN INODE 13 AT OFFSET 65804
-+DUPLICATE TRIPLE INDIRECT BLOCK 8 IN INODE 13 AT OFFSET 65804
-///END///
+test 12 passed
+test 13 passed
+test 14 passed
 test 15 passed
 test 16 passed
 test 17 passed

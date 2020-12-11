@@ -74,19 +74,18 @@ class Indirect:
 
 # HELPER FUNCTION DEFINITIONS
 def check_blocks(inodes, indirects, initial_block, num_blocks):
-    blocks_allocated_d = {}
+    blocks_allocated_d = {}  # dict of list of lists with block key
     duplicate_blocks = set()
     offsets = {1: 12, 2: 268, 3: 65804}
     depths = {0: '', 1: ' INDIRECT', 2: ' DOUBLE INDIRECT', 3: ' TRIPLE INDIRECT'}
 
-    def analyze_direct_block(offset_t, block_t, inode_t, num_blocks_t) -> int:
+    def analyze_direct_block(offset_t, block_t, inode_t) -> int:
         global error_flag
-        num = inode_t.num
-        level = 0
-        off = offset_t
+        # set up inode num, offset, and level
+        num, off, level = inode_t.num, offset_t, 0
         element = [num, off, level]
         # if the block is out of range
-        if block_t >= num_blocks_t or block_t < 0:
+        if block_t >= num_blocks or block_t < 0:
             print(f'INVALID BLOCK {block_t} IN INODE {num} AT OFFSET {off}')
             error_flag = True
         # if block is from 0 to the first block that block is reserved
@@ -104,15 +103,14 @@ def check_blocks(inodes, indirects, initial_block, num_blocks):
                 blocks_allocated_d[block_t].append(element)
         return off + 1
 
-    def analyze_indirect_block(block_t, inode_t, num_blocks_t, depth_t) -> int:
+    def analyze_indirect_block(block_t, inode_t, depth_t) -> int:
         global error_flag
-        num = inode_t.num
-        off = offsets[depth_t]
-        depth_string = depths[depth_t]
-        level = 0
+        # set up inode num, offset, and level
+        num, off, level = inode_t.num, offsets[depth_t], depth_t
         element = [num, off, level]
+        depth_string = depths[level]
         # if the block is out of range
-        if block_t >= num_blocks_t or block_t < 0:
+        if block_t >= num_blocks or block_t < 0:
             print(f"INVALID{depth_string} BLOCK {block_t} IN INODE {num} AT OFFSET {off}")
             error_flag = True
         # if block is from 0 to the first block that block is reserved
@@ -127,25 +125,24 @@ def check_blocks(inodes, indirects, initial_block, num_blocks):
             else:
                 duplicate_blocks.add(block_t)
                 blocks_allocated_d[block_t].append(element)
-        return depth + 1
+        return depth_t + 1
 
-    def analyze_indirect_referenced_block(indirect_t, num_blocks_t):
+    def analyze_indirect_referenced_block(indirect_t):
         global error_flag
         block_t = indirect_t.ref_block_num
-        depth_string = depths[indirect_t.level]
-        num = indirect_t.inode_num
-        off = indirect_t.block_offset
-        level = indirect_t.level
+        # set up inode num, offset, and level
+        num, off, level = indirect_t.inode_num, indirect_t.block_offset, indirect_t.level
         element = [num, off, level]
+        depth_string = depths[level]
         # if the block is out of range
-        if block_t >= num_blocks_t or block_t < 0:
+        if block_t >= num_blocks or block_t < 0:
             # print(indirect_t.level) TODO -- why is this here
-            print(f"INVALID{depth_string} BLOCK {block} IN INODE {num} AT OFFSET {off}")
+            print(f"INVALID{depth_string} BLOCK {block_t} IN INODE {num} AT OFFSET {off}")
             error_flag = True
         # if block is from 0 to the first block that block is reserved
         elif 0 < block_t < initial_block:
             # print(indirect_t.level) TODO -- why is this here
-            print(f"RESERVED{depth_string} BLOCK {block} IN INODE {num} AT OFFSET {off}")
+            print(f"RESERVED{depth_string} BLOCK {block_t} IN INODE {num} AT OFFSET {off}")
             error_flag = True
         elif block_t == 0:
             pass  # TODO -- what to if block == 0
@@ -164,7 +161,7 @@ def check_blocks(inodes, indirects, initial_block, num_blocks):
                 assert isinstance(block_list, list)
                 num, off, level = block_list
                 depth_string = depths[level]
-                print(f"DUPLICATE{depths.get(block_list[2])} BLOCK {block_t} IN INODE {num} AT OFFSET {off}")
+                print(f"DUPLICATE{depth_string} BLOCK {block_t} IN INODE {num} AT OFFSET {off}")
                 error_flag = True
 
     def analyze_blocks():
@@ -188,15 +185,15 @@ def check_blocks(inodes, indirects, initial_block, num_blocks):
         # look at each direct block
         offset = 0
         for block in inode.directories:
-            offset = analyze_direct_block(offset, block, inode, num_blocks)
+            offset = analyze_direct_block(offset, block, inode)
         # look at each indirect block
         depth = 1
         for block in inode.indirect_refs:
-            depth = analyze_indirect_block(block, inode, num_blocks, depth)
+            depth = analyze_indirect_block(block, inode, depth)
 
     # look at each indirect referenced block
     for indirect in indirects:
-        analyze_indirect_referenced_block(indirect, num_blocks)
+        analyze_indirect_referenced_block(indirect)
 
     print_duplicate_blocks()
     analyze_blocks()
