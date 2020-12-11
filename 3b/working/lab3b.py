@@ -79,83 +79,6 @@ def check_blocks(inodes, indirects, initial_block, num_blocks):
     offsets = {1: 12, 2: 268, 3: 65804}
     depths = {0: '', 1: ' INDIRECT', 2: ' DOUBLE INDIRECT', 3: ' TRIPLE INDIRECT'}
 
-    """    
-    def analyze_direct_block(offset_t, block_t, inode_t) -> int:
-        global error_flag
-        # set up inode num, offset, and level
-        num, off, level = inode_t.num, offset_t, 0
-        element = [num, off, level]
-        depth_string = depths[level]
-        # if the block is out of range
-        if block_t >= num_blocks or block_t < 0:
-            print(f'INVALID{depth_string} BLOCK {block_t} IN INODE {num} AT OFFSET {off}')
-            error_flag = True
-        # if block is from 0 to the first block that block is reserved
-        elif 0 < block_t < initial_block:
-            print(f"RESERVED{depth_string} BLOCK {block_t} IN INODE {num} AT OFFSET {off}")
-            error_flag = True
-        elif block_t == 0:
-            pass  # TODO -- what to if block == 0
-        # if block is not 0 add it to the allocated dictionary
-        else:
-            if block_t not in blocks_allocated_d:
-                blocks_allocated_d[block_t] = [element]  # list of lists
-            else:
-                duplicate_blocks.add(block_t)
-                blocks_allocated_d[block_t].append(element)
-        return off + 1
-
-    def analyze_indirect_block(block_t, inode_t, depth_t) -> int:
-        global error_flag
-        # set up inode num, offset, and level
-        num, off, level = inode_t.num, offsets[depth_t], depth_t
-        element = [num, off, level]
-        depth_string = depths[level]
-        # if the block is out of range
-        if block_t >= num_blocks or block_t < 0:
-            print(f"INVALID{depth_string} BLOCK {block_t} IN INODE {num} AT OFFSET {off}")
-            error_flag = True
-        # if block is from 0 to the first block that block is reserved
-        elif 0 < block_t < initial_block:
-            print(f"RESERVED{depth_string} BLOCK {block_t} IN INODE {num} AT OFFSET {off}")
-            error_flag = True
-        elif block_t == 0:
-            pass  # TODO -- what to if block == 0
-        else:
-            if block_t not in blocks_allocated_d:
-                blocks_allocated_d[block_t] = [element]  # list of lists
-            else:
-                duplicate_blocks.add(block_t)
-                blocks_allocated_d[block_t].append(element)
-        return depth_t + 1
-
-    def analyze_indirect_referenced_block(indirect_t):
-        global error_flag
-        block_t = indirect_t.ref_block_num
-        # set up inode num, offset, and level
-        num, off, level = indirect_t.inode_num, indirect_t.block_offset, indirect_t.level
-        element = [num, off, level]
-        depth_string = depths[level]
-        # if the block is out of range
-        if block_t >= num_blocks or block_t < 0:
-            # print(indirect_t.level) TODO -- why is this here
-            print(f"INVALID{depth_string} BLOCK {block_t} IN INODE {num} AT OFFSET {off}")
-            error_flag = True
-        # if block is from 0 to the first block that block is reserved
-        elif 0 < block_t < initial_block:
-            # print(indirect_t.level) TODO -- why is this here
-            print(f"RESERVED{depth_string} BLOCK {block_t} IN INODE {num} AT OFFSET {off}")
-            error_flag = True
-        elif block_t == 0:
-            pass  # TODO -- what to if block == 0
-        else:
-            if block_t not in blocks_allocated_d:
-                blocks_allocated_d[block_t] = [element]  # list of lists
-            else:
-                duplicate_blocks.add(block_t)
-                blocks_allocated_d[block_t].append(element)
-    """
-
     def analyze_block(element_t, block_t):
         global error_flag
         num, off, level = element_t
@@ -202,26 +125,6 @@ def check_blocks(inodes, indirects, initial_block, num_blocks):
                 if block_t not in bfree:
                     print(f"UNREFERENCED BLOCK {block_t}")
                     error_flag = True
-
-    """
-    # look at each inode
-    for inode in inodes:
-        # skip soft links and links of size less than or equal to 60
-        if inode.file_type == 's' and inode.file_size <= 60:
-            continue
-        # look at each direct block
-        offset = 0
-        for block in inode.directories:
-            offset = analyze_direct_block(offset, block, inode)
-        # look at each indirect block
-        depth = 1
-        for block in inode.indirect_refs:
-            depth = analyze_indirect_block(block, inode, depth)
-
-    # look at each indirect referenced block
-    for indirect in indirects:
-        analyze_indirect_referenced_block(indirect)
-    """
 
     # look at each inode
     for inode in inodes:
