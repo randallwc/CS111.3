@@ -258,12 +258,10 @@ def check_inodes(inodes, dirents, first, cap):
         global error_flag
         for entry in dirents_t:
             if entry.name == "'.'" and entry.inode != entry.parent_inode:
-                print(f"DIRECTORY INODE {entry.parent_inode} \
-                NAME '.' LINK TO INODE {entry.inode} SHOULD BE {entry.parent_inode}")
+                print(f"DIRECTORY INODE {entry.parent_inode} NAME '.' LINK TO INODE {entry.inode} SHOULD BE {entry.parent_inode}")
                 error_flag = True
             if entry.name == "'..'" and parent_dir[entry.parent_inode] != entry.inode:
-                print(f"DIRECTORY INODE {entry.parent_inode} \
-                NAME '..' LINK TO INODE {entry.inode} SHOULD BE {entry.parent_inode}")
+                print(f"DIRECTORY INODE {entry.parent_inode} NAME '..' LINK TO INODE {entry.inode} SHOULD BE {entry.parent_inode}")
                 error_flag = True
 
     check_freelist(inodes, allocated)
