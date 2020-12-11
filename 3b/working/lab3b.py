@@ -271,7 +271,7 @@ def check_inodes(inodes, dirents, first, cap):
 
 
 def main():
-    # Get args
+    # Get arg
     argv = sys.argv
 
     # Check if more than 1 arg
