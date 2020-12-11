@@ -79,18 +79,20 @@ def check_blocks(inodes, indirects, initial_block, num_blocks):
     offsets = {1: 12, 2: 268, 3: 65804}
     depths = {0: '', 1: ' INDIRECT', 2: ' DOUBLE INDIRECT', 3: ' TRIPLE INDIRECT'}
 
+    """    
     def analyze_direct_block(offset_t, block_t, inode_t) -> int:
         global error_flag
         # set up inode num, offset, and level
         num, off, level = inode_t.num, offset_t, 0
         element = [num, off, level]
+        depth_string = depths[level]
         # if the block is out of range
         if block_t >= num_blocks or block_t < 0:
-            print(f'INVALID BLOCK {block_t} IN INODE {num} AT OFFSET {off}')
+            print(f'INVALID{depth_string} BLOCK {block_t} IN INODE {num} AT OFFSET {off}')
             error_flag = True
         # if block is from 0 to the first block that block is reserved
         elif 0 < block_t < initial_block:
-            print(f"RESERVED BLOCK {block_t} IN INODE {num} AT OFFSET {off}")
+            print(f"RESERVED{depth_string} BLOCK {block_t} IN INODE {num} AT OFFSET {off}")
             error_flag = True
         elif block_t == 0:
             pass  # TODO -- what to if block == 0
@@ -152,6 +154,30 @@ def check_blocks(inodes, indirects, initial_block, num_blocks):
             else:
                 duplicate_blocks.add(block_t)
                 blocks_allocated_d[block_t].append(element)
+    """
+
+    def analyze_block(element_t, block_t):
+        global error_flag
+        num, off, level = element_t
+        depth_string = depths[level]
+        # if the block is out of range
+        if block_t >= num_blocks or block_t < 0:
+            # print(indirect_t.level) TODO -- why is this here
+            print(f"INVALID{depth_string} BLOCK {block_t} IN INODE {num} AT OFFSET {off}")
+            error_flag = True
+        # if block is from 0 to the first block that block is reserved
+        elif 0 < block_t < initial_block:
+            # print(indirect_t.level) TODO -- why is this here
+            print(f"RESERVED{depth_string} BLOCK {block_t} IN INODE {num} AT OFFSET {off}")
+            error_flag = True
+        elif block_t == 0:
+            pass  # TODO -- what to if block == 0
+        else:
+            if block_t not in blocks_allocated_d:
+                blocks_allocated_d[block_t] = [list(element_t)]  # list of lists
+            else:
+                duplicate_blocks.add(block_t)
+                blocks_allocated_d[block_t].append(list(element_t))
 
     def print_duplicate_blocks():
         global error_flag
@@ -177,6 +203,7 @@ def check_blocks(inodes, indirects, initial_block, num_blocks):
                     print(f"UNREFERENCED BLOCK {block_t}")
                     error_flag = True
 
+    """
     # look at each inode
     for inode in inodes:
         # skip soft links and links of size less than or equal to 60
@@ -194,6 +221,32 @@ def check_blocks(inodes, indirects, initial_block, num_blocks):
     # look at each indirect referenced block
     for indirect in indirects:
         analyze_indirect_referenced_block(indirect)
+    """
+
+    # look at each inode
+    for inode in inodes:
+        # skip soft links and links of size less than or equal to 60
+        if inode.file_type == 's' and inode.file_size <= 60:
+            continue
+        # look at each direct block
+        offset = 0
+        for block in inode.directories:
+            element = inode.num, offset, 0
+            analyze_block(element, block)
+            offset += 1
+        # look at each indirect block
+        depth = 1
+        for block in inode.indirect_refs:
+            element = inode.num, offsets[depth], depth
+            analyze_block(element, block)
+            depth += 1
+
+    # look at each indirect referenced block
+    for indirect in indirects:
+        # set up inode num, offset, and level
+        element = indirect.inode_num, indirect.block_offset, indirect.level
+        block = indirect.ref_block_num
+        analyze_block(element, block)
 
     print_duplicate_blocks()
     analyze_blocks()
@@ -256,10 +309,12 @@ def check_inodes(inodes, dirents, first, cap):
         global error_flag
         for entry in dirents_t:
             if entry.name == "'.'" and entry.inode != entry.parent_inode:
-                print(f"DIRECTORY INODE {entry.parent_inode} NAME '.' LINK TO INODE {entry.inode} SHOULD BE {entry.parent_inode}")
+                print(f"DIRECTORY INODE {entry.parent_inode} NAME '.' ", end='')
+                print(f"LINK TO INODE {entry.inode} SHOULD BE {entry.parent_inode}")
                 error_flag = True
             if entry.name == "'..'" and parent_dir[entry.parent_inode] != entry.inode:
-                print(f"DIRECTORY INODE {entry.parent_inode} NAME '..' LINK TO INODE {entry.inode} SHOULD BE {entry.parent_inode}")
+                print(f"DIRECTORY INODE {entry.parent_inode} NAME '..' ", end='')
+                print(f"LINK TO INODE {entry.inode} SHOULD BE {entry.parent_inode}")
                 error_flag = True
 
     check_freelist(inodes, allocated)
@@ -267,9 +322,7 @@ def check_inodes(inodes, dirents, first, cap):
     check_links(inodes, link_count)
     check_curr_parent_dir(dirents)
 
-argv = str()
 def main():
-    global argv
     # Get arg
     argv = sys.argv
 

@@ -25,3 +25,9 @@ dist: default
 check: default check.sh
 	chmod +x check.sh
 	./check.sh
+
+final_check: dist check
+	cp $(NAME)-$(UID).tar.gz ../submit/
+	chmod +x ../submit/P3B_check.sh
+	../submit/P3B_check.sh $(UID)
+	rm ../**/functions.sh
