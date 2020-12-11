@@ -45,7 +45,7 @@ do
 	ERROR_FILE=test/P3B-test_$i.err
 	OUTPUT_FILE=test/$i.txt
 	DIFF_FILE=test/$i.diff
-	diff -u --color $OUTPUT_FILE $ERROR_FILE > $DIFF_FILE
+	diff -u $OUTPUT_FILE $ERROR_FILE > $DIFF_FILE
 	if [ -s $DIFF_FILE ]
 	then
 		echo ""

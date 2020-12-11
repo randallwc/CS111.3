@@ -22,8 +22,6 @@ clean:
 dist: default
 	tar -czf $(NAME)-$(UID).tar.gz $(FILES)
 
-test: check
-
-check: default test.sh
-	chmod +x test.sh
-	./test.sh
+check: default check.sh
+	chmod +x check.sh
+	./check.sh
