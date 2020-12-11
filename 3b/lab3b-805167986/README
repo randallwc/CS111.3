@@ -7,6 +7,7 @@ Files:
 Makefile	...	makefile with 4 arguments default, dist, and clean
 README		...	this file
 lab3b.py	...	source file in python3
+lab3b.sh	... shell script to create `lab3b` executeable that exits with the exit code of `lab3b.py`
 
 Sources:
 https://docs.python.org/3/library/exceptions.html#OSError
