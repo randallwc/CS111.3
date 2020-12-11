@@ -14,7 +14,6 @@ ifree = []
 error_flag = False
 
 
-# TODO -- do dictionary entries for each of these?
 # CLASS DEFINITIONS
 class Superblock:
     def __init__(self, row):
@@ -85,12 +84,10 @@ def check_blocks(inodes, indirects, initial_block, num_blocks):
         depth_string = depths[level]
         # if the block is out of range
         if block_t >= num_blocks or block_t < 0:
-            # print(indirect_t.level) TODO -- why is this here
             print(f"INVALID{depth_string} BLOCK {block_t} IN INODE {num} AT OFFSET {off}")
             error_flag = True
         # if block is from 0 to the first block that block is reserved
         elif 0 < block_t < initial_block:
-            # print(indirect_t.level) TODO -- why is this here
             print(f"RESERVED{depth_string} BLOCK {block_t} IN INODE {num} AT OFFSET {off}")
             error_flag = True
         elif block_t == 0:
@@ -277,7 +274,6 @@ def main():
     initial_block += int(math.ceil(superblock.inode_size * group.inode_per_group / superblock.block_size))
     num_blocks = superblock.num_blocks
 
-    # TODO -- change function names
     check_blocks(inodes, indirects, initial_block, num_blocks)
     check_inodes(inodes, dirents, superblock.first_inode, superblock.num_inodes)
 
